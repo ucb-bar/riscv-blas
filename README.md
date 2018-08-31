@@ -1,4 +1,3 @@
-# Custom BLAS and LAPACK Cross-Compilation Framework for RISC-V
 # RISCV USERS READ THIS
 
 This repository provides a framework for writing and cross-compiling custom optimized BLAS routines
@@ -16,6 +15,10 @@ make
 ```
 
 `libcblas.a` is probably the most relevant for you. This library provides the standard C BLAS interface many other software packages expect.
+
+### Building gfortran
+My hacky way to do this is to edit the generated Makefile in `riscv-gnu-toolchain/build`, and for every line with
+`--enable-languages=c,c++` replace that with `--enable-languages=c,c++,fortran`. Then `make all` and `make install`.
 
 ## Testing
 Tests are available at `BLAS/TESTING`, `CBLAS/TESTING`, and `LAPACK/TESTING`.
