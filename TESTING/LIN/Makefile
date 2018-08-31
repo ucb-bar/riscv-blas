@@ -267,34 +267,34 @@ proto-complex: xlintstrfc
 proto-complex16: xlintstzc xlintstrfz
 
 xlintsts: $(ALINTST) $(SLINTST) $(SCLNTST) ../../$(TMGLIB) ../../$(LAPACKLIB) $(XBLASLIB) $(BLASLIB)
-	$(LOADER) $(LOADOPTS) -o $@ $^
+	$(LOADER) $(LOADOPTS) -o $@ $^ $(F2CLIB)
 
 xlintstc: $(ALINTST) $(CLINTST) $(SCLNTST) ../../$(TMGLIB) ../../$(LAPACKLIB) $(XBLASLIB) $(BLASLIB)
-	$(LOADER) $(LOADOPTS) -o $@ $^
+	$(LOADER) $(LOADOPTS) -o $@ $^ $(F2CLIB)
 
 xlintstd: $(ALINTST) $(DLINTST) $(DZLNTST) ../../$(TMGLIB) ../../$(LAPACKLIB) $(XBLASLIB) $(BLASLIB)
-	$(LOADER) $(LOADOPTS) -o $@ $^
+	$(LOADER) $(LOADOPTS) -o $@ $^ $(F2CLIB)
 
 xlintstz: $(ALINTST) $(ZLINTST) $(DZLNTST) ../../$(TMGLIB) ../../$(LAPACKLIB) $(XBLASLIB) $(BLASLIB)
-	$(LOADER) $(LOADOPTS) -o $@ $^
+	$(LOADER) $(LOADOPTS) -o $@ $^ $(F2CLIB)
 
 xlintstds: $(DSLINTST) ../../$(TMGLIB) ../../$(LAPACKLIB) $(BLASLIB)
-	$(LOADER) $(LOADOPTS) -o $@ $^
+	$(LOADER) $(LOADOPTS) -o $@ $^ $(F2CLIB)
 
 xlintstzc: $(ZCLINTST) ../../$(TMGLIB) ../../$(LAPACKLIB) $(BLASLIB)
-	$(LOADER) $(LOADOPTS) -o $@ $^
+	$(LOADER) $(LOADOPTS) -o $@ $^ $(F2CLIB)
 
 xlintstrfs: $(SLINTSTRFP) ../../$(TMGLIB) ../../$(LAPACKLIB) $(BLASLIB)
-	$(LOADER) $(LOADOPTS) -o $@ $^
+	$(LOADER) $(LOADOPTS) -o $@ $^ $(F2CLIB)
 
 xlintstrfd: $(DLINTSTRFP) ../../$(TMGLIB) ../../$(LAPACKLIB) $(BLASLIB)
-	$(LOADER) $(LOADOPTS) -o $@ $^
+	$(LOADER) $(LOADOPTS) -o $@ $^ $(F2CLIB)
 
 xlintstrfc: $(CLINTSTRFP) ../../$(TMGLIB) ../../$(LAPACKLIB) $(BLASLIB)
-	$(LOADER) $(LOADOPTS) -o $@ $^
+	$(LOADER) $(LOADOPTS) -o $@ $^ $(F2CLIB)
 
 xlintstrfz: $(ZLINTSTRFP) ../../$(TMGLIB) ../../$(LAPACKLIB) $(BLASLIB)
-	$(LOADER) $(LOADOPTS) -o $@ $^
+	$(LOADER) $(LOADOPTS) -o $@ $^ $(F2CLIB)
 
 $(ALINTST): $(FRC)
 $(SCLNTST): $(FRC)

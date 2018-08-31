@@ -1,0 +1,6 @@
+*.o
+*~
+arith.h
+f2c.h
+signal1.h
+sysdep1.h

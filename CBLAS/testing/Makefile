@@ -5,7 +5,7 @@
 include ../../make.inc
 
 # Archive files necessary to compile
-LIB = $(CBLASLIB) $(BLASLIB)
+LIB = $(CBLASLIB) $(BLASLIB) $(F2CLIB)
 
 # Object files for single precision real
 stestl1o = c_sblas1.o
@@ -71,29 +71,30 @@ xzcblat3: c_zblat3.o $(ztestl3o) $(LIB)
 # RUN TESTS
 run: all
 	@echo "--> TESTING CBLAS 1 - SINGLE PRECISION REAL <--"
-	@./xscblat1 > stest1.out
+	@spike pk xscblat1 > stest1.out
 	@echo "--> TESTING CBLAS 1 - DOUBLE PRECISION REAL <--"
-	@./xdcblat1 > dtest1.out
+	@spike pk xdcblat1 > dtest1.out
 	@echo "--> TESTING CBLAS 1 - SINGLE PRECISION COMPLEX <--"
-	@./xccblat1 > ctest1.out
+	@spike pk xccblat1 > ctest1.out
 	@echo "--> TESTING CBLAS 1 - DOUBLE PRECISION COMPLEX <--"
-	@./xzcblat1 > ztest1.out
+	@spike pk xzcblat1 > ztest1.out
 	@echo "--> TESTING CBLAS 2 - SINGLE PRECISION REAL <--"
-	@./xscblat2 < sin2 > stest2.out
+	@spike pk xscblat2 < sin2 > stest2.out
 	@echo "--> TESTING CBLAS 2 - DOUBLE PRECISION REAL <--"
-	@./xdcblat2 < din2 > dtest2.out
+	@spike pk xdcblat2 < din2 > dtest2.out
 	@echo "--> TESTING CBLAS 2 - SINGLE PRECISION COMPLEX <--"
-	@./xccblat2 < cin2 > ctest2.out
+	@spike pk xccblat2 < cin2 > ctest2.out
 	@echo "--> TESTING CBLAS 2 - DOUBLE PRECISION COMPLEX <--"
-	@./xzcblat2 < zin2 > ztest2.out
+	@spike pk xzcblat2 < zin2 > ztest2.out
 	@echo "--> TESTING CBLAS 3 - SINGLE PRECISION REAL <--"
-	@./xscblat3 < sin3 > stest3.out
+	@spike pk xscblat3 < sin3 > stest3.out
 	@echo "--> TESTING CBLAS 3 - DOUBLE PRECISION REAL <--"
-	@./xdcblat3 < din3 > dtest3.out
+	@spike pk xdcblat3 < din3 > dtest3.out
 	@echo "--> TESTING CBLAS 3 - SINGLE PRECISION COMPLEX <--"
-	@./xccblat3 < cin3 > ctest3.out
+	@spike pk xccblat3 < cin3 > ctest3.out
 	@echo "--> TESTING CBLAS 3 - DOUBLE PRECISION COMPLEX <--"
-	@./xzcblat3 < zin3 > ztest3.out
+	@spike pk xzcblat3 < zin3 > ztest3.out
+	@cat *.out
 
 clean: cleanobj cleanexe cleantest
 cleanobj:

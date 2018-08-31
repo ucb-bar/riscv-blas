@@ -6,7 +6,7 @@ blas:
 	$(MAKE) -C SRC
 
 blas_testing: blas
-	$(MAKE) -C TESTING run
+	$(MAKE) -C TESTING
 
 clean:
 	$(MAKE) -C SRC clean

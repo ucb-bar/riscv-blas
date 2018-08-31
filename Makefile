@@ -6,7 +6,10 @@
 
 include make.inc
 
-all: lib blas_testing cblas_testing lapack_testing
+all: f2c lib blas_testing cblas_testing lapack_testing
+
+f2c:
+	$(MAKE) -C libf2c
 
 lib: lapacklib tmglib
 #lib: blaslib variants lapacklib tmglib
@@ -116,6 +119,7 @@ clean:
 	$(MAKE) -C TESTING/LIN clean
 	$(MAKE) -C TESTING/EIG clean
 	$(MAKE) -C LAPACKE clean
+	$(MAKE) -C libf2c clean
 	rm -f *.a
 cleanobj:
 	$(MAKE) -C INSTALL cleanobj
