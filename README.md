@@ -11,12 +11,14 @@ Note gfortran is typically not installed as part of a standard riscv-tools insta
 The default ISA is rv64gc, specified in `make.inc`. You may want to change this.
 
 To build librefblas, libcblas, and liblapack, run
-```make```
+```
+make
+```
 
-`libcblas` is probably the most relevant for you. This library provides the standard C BLAS interface many other software packages expect.
+`libcblas.a` is probably the most relevant for you. This library provides the standard C BLAS interface many other software packages expect.
 
 ## Testing
-Tests are available at BLAS/TESTING, CBLAS/TESTING, and LAPACK/TESTING.
+Tests are available at `BLAS/TESTING`, `CBLAS/TESTING`, and `LAPACK/TESTING`.
 BLAS tests are probably the most relevant. To run these, make sure the correct spike version is available in your PATH.
 ```
 cd BLAS/TESTING
