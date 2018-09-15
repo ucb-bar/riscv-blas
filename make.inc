@@ -6,7 +6,7 @@
 
 SHELL = /bin/sh
 PREFIX = riscv64-unknown-linux-gnu-
-MARCH=rv64gc
+MARCH=rv64gcxhwacha
 SPIKEARGS=
 
 #  CC is the C compiler, normally invoked with options CFLAGS.
