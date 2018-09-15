@@ -21,7 +21,7 @@ CFLAGS = -O3 -I../../libf2c -Wa,-march=rv64gc
 #  should not compile LAPACK with flags such as -ffpe-trap=overflow.
 #
 FORTRAN = $(PREFIX)gfortran -static
-OPTS    = -O2 -frecursive -Wa,-march=rv64gcv
+OPTS    = -O2 -frecursive -Wa,-march=rv64gc
 DRVOPTS = $(OPTS)
 NOOPT   = -O0 -frecursive
 
