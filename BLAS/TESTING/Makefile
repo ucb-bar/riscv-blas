@@ -34,18 +34,18 @@ xblat3z: zblat3.o $(BLASLIB)
 	$(LOADER) $(LOADOPTS) -o $@ $^ $(LOADLIBS)
 
 run: all
-	spike pk xblat1s > sblat1.out
-	spike pk xblat1d > dblat1.out
-	spike pk xblat1c > cblat1.out
-	spike pk xblat1z > zblat1.out
-	spike pk xblat2s < sblat2.in
-	spike pk xblat2d < dblat2.in
-	spike pk xblat2c < cblat2.in
-	spike pk xblat2z < zblat2.in
-	spike pk xblat3s < sblat3.in
-	spike pk xblat3d < dblat3.in
-	spike pk xblat3c < cblat3.in
-	spike pk xblat3z < zblat3.in
+	spike $(SPIKEARGS) pk xblat1s > sblat1.out
+	spike $(SPIKEARGS) pk xblat1d > dblat1.out
+	spike $(SPIKEARGS) pk xblat1c > cblat1.out
+	spike $(SPIKEARGS) pk xblat1z > zblat1.out
+	spike $(SPIKEARGS) pk xblat2s < sblat2.in
+	spike $(SPIKEARGS) pk xblat2d < dblat2.in
+	spike $(SPIKEARGS) pk xblat2c < cblat2.in
+	spike $(SPIKEARGS) pk xblat2z < zblat2.in
+	spike $(SPIKEARGS) pk xblat3s < sblat3.in
+	spike $(SPIKEARGS) pk xblat3d < dblat3.in
+	spike $(SPIKEARGS) pk xblat3c < cblat3.in
+	spike $(SPIKEARGS) pk xblat3z < zblat3.in
 	cat *.out
 
 clean: cleanobj cleanexe cleantest
