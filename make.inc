@@ -6,11 +6,12 @@
 
 SHELL = /bin/sh
 PREFIX = riscv64-unknown-linux-gnu-
+MARCH=rv64gc
 
 #  CC is the C compiler, normally invoked with options CFLAGS.
 #
 CC     = $(PREFIX)gcc -static
-CFLAGS = -O3 -I../../libf2c -Wa,-march=rv64gc
+CFLAGS = -O3 -I../../libf2c -Wa,-march=$(MARCH)
 
 #  Modify the FORTRAN and OPTS definitions to refer to the compiler
 #  and desired compiler options for your machine.  NOOPT refers to
@@ -21,7 +22,7 @@ CFLAGS = -O3 -I../../libf2c -Wa,-march=rv64gc
 #  should not compile LAPACK with flags such as -ffpe-trap=overflow.
 #
 FORTRAN = $(PREFIX)gfortran -static
-OPTS    = -O2 -frecursive -Wa,-march=rv64gc
+OPTS    = -O2 -frecursive -Wa,-march=$(MARCH)
 DRVOPTS = $(OPTS)
 NOOPT   = -O0 -frecursive
 
