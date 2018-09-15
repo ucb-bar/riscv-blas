@@ -137,7 +137,7 @@ ALLOBJ = $(SBLAS1) $(SBLAS2) $(SBLAS3) $(DBLAS1) $(DBLAS2) $(DBLAS3) \
 	$(CBLAS1) $(CBLAS2) $(CBLAS3) $(ZBLAS1) \
 	$(ZBLAS2) $(ZBLAS3) $(ALLBLAS)
 
-$(BLASLIB): $(ALLOBJ) ../../CUSTOM/SRC/custom-utils.o
+$(BLASLIB): $(ALLOBJ) ../../CUSTOM/SRC/custom-utils.o ../../CUSTOM/SRC/custom-utils-asm.o
 	$(ARCH) $(ARCHFLAGS) $@ $^
 	$(RANLIB) $@
 
