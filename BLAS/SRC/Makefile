@@ -137,7 +137,7 @@ ALLOBJ = $(SBLAS1) $(SBLAS2) $(SBLAS3) $(DBLAS1) $(DBLAS2) $(DBLAS3) \
 	$(CBLAS1) $(CBLAS2) $(CBLAS3) $(ZBLAS1) \
 	$(ZBLAS2) $(ZBLAS3) $(ALLBLAS)
 
-$(BLASLIB): $(ALLOBJ)
+$(BLASLIB): $(ALLOBJ) ../../CUSTOM/SRC/custom-utils.o
 	$(ARCH) $(ARCHFLAGS) $@ $^
 	$(RANLIB) $@
 
@@ -168,3 +168,5 @@ cleanlib:
 
 .f.o:
 	$(FORTRAN) $(OPTS) -c -o $@ $<
+.c.o:
+	$(CC) $(CFLAGS) -c -o $@ $<

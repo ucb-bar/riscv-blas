@@ -14,19 +14,22 @@ f2c:
 lib: lapacklib tmglib
 #lib: blaslib variants lapacklib tmglib
 
-blaslib:
+custom:
+	$(MAKE) -C CUSTOM
+
+blaslib: custom f2c
 	$(MAKE) -C BLAS
 
-cblaslib:
+cblaslib: custom f2c
 	$(MAKE) -C CBLAS
 
-lapacklib:
+lapacklib: custom f2c
 	$(MAKE) -C SRC
 
-lapackelib:
+lapackelib: custom f2c
 	$(MAKE) -C LAPACKE
 
-tmglib:
+tmglib: custom
 	$(MAKE) -C TESTING/MATGEN
 
 variants:
@@ -120,6 +123,7 @@ clean:
 	$(MAKE) -C TESTING/EIG clean
 	$(MAKE) -C LAPACKE clean
 	$(MAKE) -C libf2c clean
+	$(MAKE) -C CUSTOM clean
 	rm -f *.a
 cleanobj:
 	$(MAKE) -C INSTALL cleanobj
