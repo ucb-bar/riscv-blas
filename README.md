@@ -31,6 +31,8 @@ make run
 ## Hacking
 Relevant BLAS source files are at `BLAS/SRC`. The reference C implementations were translated from the reference fortran implementations using f2c. This allows you to easily insert custom inline assembler code.
 
+Custom utility functions, or assembly kernels can be defined in `CUSTOM/SRC` and `CUSTOM/include`.
+
 
 # LAPACK
 
