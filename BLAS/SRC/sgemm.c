@@ -332,7 +332,7 @@
       if (nota) {
         /*           Form  C := alpha*A*B + beta*C. */
         hwacha_init();
-        setvcfg(0, 0, 5, 1);
+        setvcfg(0, 5, 0, 1);
         int vl = 0;
         float* ca;
         float* cb;
@@ -410,7 +410,7 @@
       if (nota) {
         /*           Form  C := alpha*A*B**T + beta*C */
         hwacha_init();
-        setvcfg(0, 0, 5, 1);
+        setvcfg(0, 5, 0, 1);
         int vl = 0;
         float* ca;
         float* cb;
