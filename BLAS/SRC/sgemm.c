@@ -342,7 +342,7 @@
         i__3 = *m;
         ca = a;
         cb = b;
-        void* pre  = PRELOAD("sgemm");
+        void* pre  = PRELOAD("gemm");
         asm volatile ("vmcs vs1, %0" : : "r" (*alpha));
         asm volatile ("vmcs vs2, %0" : : "r" (*beta));
         while (i__3 - i__ > 0) {
@@ -420,7 +420,7 @@
         i__3 = *m;
         ca = a;
         cb = b;
-        void* pre  = PRELOAD("sgemm");
+        void* pre  = PRELOAD("gemm");
         asm volatile ("vmcs vs1, %0" : : "r" (*alpha));
         asm volatile ("vmcs vs2, %0" : : "r" (*beta));
         while (i__3 - i__ > 0) {

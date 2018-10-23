@@ -11,7 +11,7 @@
 */
 
 #include "f2c.h"
-
+#include "custom-utils.h"
 /* > \brief \b DSCAL */
 
 /*  =========== DOCUMENTATION =========== */
@@ -124,42 +124,41 @@
     if (*n <= 0 || *incx <= 0) {
 	return 0;
     }
+    hwacha_init();
+    setvcfg(1, 0, 0, 1);
+    int vl = 0;
+    double* dxa = dx + 1;
+    void* pre = PRELOAD("blas1");
+    asm volatile ("vmcs vs1, %0" : : "r" (*da));
     if (*incx == 1) {
 
 /*        code for increment equal to 1 */
-
-
-/*        clean-up loop */
-
-	m = *n % 5;
-	if (m != 0) {
-	    i__1 = m;
-	    for (i__ = 1; i__ <= i__1; ++i__) {
-		dx[i__] = *da * dx[i__];
-	    }
-	    if (*n < 5) {
-		return 0;
-	    }
-	}
-	mp1 = m + 1;
-	i__1 = *n;
-	for (i__ = mp1; i__ <= i__1; i__ += 5) {
-	    dx[i__] = *da * dx[i__];
-	    dx[i__ + 1] = *da * dx[i__ + 1];
-	    dx[i__ + 2] = *da * dx[i__ + 2];
-	    dx[i__ + 3] = *da * dx[i__ + 3];
-	    dx[i__ + 4] = *da * dx[i__ + 4];
-	}
+      i__  = 0;
+      i__1 = *n;
+      while (i__1 - i__ > 0) {
+        vl = setvlen(i__1 - i__);
+        asm volatile ("vmca va0, %0" : : "r" (dxa));
+        VF("dscal_unit");
+        dxa += vl;
+        i__ += vl;
+      }
     } else {
+      int ix = 1;
+      if (*incx < 0) {
+        ix = (-(*n) + 1) * *incx + 1;
+      }
+      dxa = dx + ix;
 
-/*        code for increment not equal to 1 */
-
-	nincx = *n * *incx;
-	i__1 = nincx;
-	i__2 = *incx;
-	for (i__ = 1; i__2 < 0 ? i__ >= i__1 : i__ <= i__1; i__ += i__2) {
-	    dx[i__] = *da * dx[i__];
-	}
+      i__  = 0;
+      i__1 = *n;
+      asm volatile ("vmca va1, %0" : : "r" (*incx << 3));
+      while (i__1 - i__ > 0) {
+        vl = setvlen(i__1 - i__);
+        asm volatile ("vmca va0, %0" : : "r" (dxa));
+        VF("dscal_stride");
+        dxa += vl * (*incx);
+        i__ += vl;
+      }
     }
     return 0;
 } /* dscal_ */

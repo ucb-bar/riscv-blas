@@ -8,7 +8,7 @@ vsetvlen:
 	vstop
 
         .align 12
-        .globl sgemm
+        .globl gemm
 	.globl sgemm_pre
 	.globl sgemm_loop
         .globl sgemm_postalpha
@@ -29,7 +29,7 @@ vsetvlen:
         .globl dgemm_postalphaedge
 	.globl dgemm_postbetaedge
 	.globl dgemm_postedge
-sgemm:
+gemm:
 sgemm_pre:
         vadd vv0, vs0, vs0
         vadd vv1, vs0, vs0
@@ -143,8 +143,13 @@ dgemm_postedge:
         .globl blas1
         .globl scopy_unit
         .globl scopy_stride
+        .globl sscal_unit
+        .globl sscal_stride
         .globl dcopy_unit
         .globl dcopy_stride
+        .globl dscal_unit
+        .globl dscal_stride
+
 blas1:
 scopy_unit:
         vlw vv0, va0
@@ -154,6 +159,16 @@ scopy_stride:
         vlstw vv0, va0, va2
         vsstw vv0, va1, va3
         vstop
+sscal_unit:
+        vlw vv0, va0
+        vfmul.s vv0, vv0, vs1
+        vsw vv0, va0
+        vstop
+sscal_stride:
+        vlstw vv0, va0, va1
+        vfmul.s vv0, vv0, vs1
+        vsstw vv0, va0, va1
+        vstop
 dcopy_unit:
         vld vv0, va0
         vsd vv0, va1
@@ -161,4 +176,14 @@ dcopy_unit:
 dcopy_stride:
         vlstd vv0, va0, va2
         vsstd vv0, va1, va3
+        vstop
+dscal_unit:
+        vld vv0, va0
+        vfmul.d vv0, vv0, vs1
+        vsd vv0, va0
+        vstop
+dscal_stride:
+        vlstd vv0, va0, va1
+        vfmul.d vv0, vv0, vs1
+        vsstd vv0, va0, va1
         vstop
