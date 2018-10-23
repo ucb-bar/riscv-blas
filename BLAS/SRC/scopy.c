@@ -11,7 +11,7 @@
 */
 
 #include "f2c.h"
-
+#include "custom-utils.h"
 /* > \brief \b SCOPY */
 
 /*  =========== DOCUMENTATION =========== */
@@ -128,34 +128,27 @@
     if (*n <= 0) {
 	return 0;
     }
+    hwacha_init();
+    setvcfg(0, 1, 0, 1);
+    int vl = 0;
+    float* sxa = sx + 1;
+    float* sya = sy + 1;
+    void* pre = PRELOAD("blas1");
     if (*incx == 1 && *incy == 1) {
 
 /*        code for both increments equal to 1 */
+      i__  = 0;
+      i__1 = *n;
 
-
-/*        clean-up loop */
-
-	m = *n % 7;
-	if (m != 0) {
-	    i__1 = m;
-	    for (i__ = 1; i__ <= i__1; ++i__) {
-		sy[i__] = sx[i__];
-	    }
-	    if (*n < 7) {
-		return 0;
-	    }
-	}
-	mp1 = m + 1;
-	i__1 = *n;
-	for (i__ = mp1; i__ <= i__1; i__ += 7) {
-	    sy[i__] = sx[i__];
-	    sy[i__ + 1] = sx[i__ + 1];
-	    sy[i__ + 2] = sx[i__ + 2];
-	    sy[i__ + 3] = sx[i__ + 3];
-	    sy[i__ + 4] = sx[i__ + 4];
-	    sy[i__ + 5] = sx[i__ + 5];
-	    sy[i__ + 6] = sx[i__ + 6];
-	}
+      while (i__1 - i__ > 0) {
+        vl = setvlen(i__1 - i__);
+        asm volatile ("vmca va0, %0" : : "r" (sxa));
+        asm volatile ("vmca va1, %0" : : "r" (sya));
+        VF("scopy_unit");
+        sxa += vl;
+        sya += vl;
+        i__ += vl;
+      }
     } else {
 
 /*        code for unequal increments or equal increments */
@@ -169,12 +162,22 @@
 	if (*incy < 0) {
 	    iy = (-(*n) + 1) * *incy + 1;
 	}
+
+        sxa = sx + ix;
+        sya = sy + iy;
+        i__  = 0;
 	i__1 = *n;
-	for (i__ = 1; i__ <= i__1; ++i__) {
-	    sy[iy] = sx[ix];
-	    ix += *incx;
-	    iy += *incy;
-	}
+        asm volatile ("vmca va2, %0" : : "r" (*incx << 2));
+        asm volatile ("vmca va3, %0" : : "r" (*incy << 2));
+        while (i__1 - i__ > 0) {
+          vl = setvlen(i__1 - i__);
+          asm volatile ("vmca va0, %0" : : "r" (sxa));
+          asm volatile ("vmca va1, %0" : : "r" (sya));
+          VF("scopy_stride");
+          sxa += vl * (*incx);
+          sya += vl * (*incy);
+          i__ += vl;
+        }
     }
     return 0;
 } /* scopy_ */

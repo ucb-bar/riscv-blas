@@ -11,7 +11,7 @@
 */
 
 #include "f2c.h"
-
+#include "custom-utils.h"
 /* > \brief \b DCOPY */
 
 /*  =========== DOCUMENTATION =========== */
@@ -128,39 +128,31 @@
     if (*n <= 0) {
 	return 0;
     }
+    hwacha_init();
+    setvcfg(1, 0, 0, 1);
+    int vl = 0;
+    double* dxa = dx + 1;
+    double* dya = dy + 1;
+    void* pre = PRELOAD("blas1");
     if (*incx == 1 && *incy == 1) {
 
 /*        code for both increments equal to 1 */
+      i__  = 0;
+      i__1 = *n;
 
-
-/*        clean-up loop */
-
-	m = *n % 7;
-	if (m != 0) {
-	    i__1 = m;
-	    for (i__ = 1; i__ <= i__1; ++i__) {
-		dy[i__] = dx[i__];
-	    }
-	    if (*n < 7) {
-		return 0;
-	    }
-	}
-	mp1 = m + 1;
-	i__1 = *n;
-	for (i__ = mp1; i__ <= i__1; i__ += 7) {
-	    dy[i__] = dx[i__];
-	    dy[i__ + 1] = dx[i__ + 1];
-	    dy[i__ + 2] = dx[i__ + 2];
-	    dy[i__ + 3] = dx[i__ + 3];
-	    dy[i__ + 4] = dx[i__ + 4];
-	    dy[i__ + 5] = dx[i__ + 5];
-	    dy[i__ + 6] = dx[i__ + 6];
-	}
+      while (i__1 - i__ > 0) {
+        vl = setvlen(i__1 - i__);
+        asm volatile ("vmca va0, %0" : : "r" (dxa));
+        asm volatile ("vmca va1, %0" : : "r" (dya));
+        VF("dcopy_unit");
+        dxa += vl;
+        dya += vl;
+        i__ += vl;
+      }
     } else {
 
 /*        code for unequal increments or equal increments */
 /*          not equal to 1 */
-
 	ix = 1;
 	iy = 1;
 	if (*incx < 0) {
@@ -169,12 +161,22 @@
 	if (*incy < 0) {
 	    iy = (-(*n) + 1) * *incy + 1;
 	}
+
+        dxa = dx + ix;
+        dya = dy + iy;
+        i__  = 0;
 	i__1 = *n;
-	for (i__ = 1; i__ <= i__1; ++i__) {
-	    dy[iy] = dx[ix];
-	    ix += *incx;
-	    iy += *incy;
-	}
+        asm volatile ("vmca va2, %0" : : "r" (*incx << 3));
+        asm volatile ("vmca va3, %0" : : "r" (*incy << 3));
+        while (i__1 - i__ > 0) {
+          vl = setvlen(i__1 - i__);
+          asm volatile ("vmca va0, %0" : : "r" (dxa));
+          asm volatile ("vmca va1, %0" : : "r" (dya));
+          VF("dcopy_stride");
+          dxa += vl * (*incx);
+          dya += vl * (*incy);
+          i__ += vl;
+        }
     }
     return 0;
 } /* dcopy_ */

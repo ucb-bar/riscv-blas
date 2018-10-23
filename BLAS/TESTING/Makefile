@@ -46,7 +46,7 @@ run: all
 	spike $(SPIKEARGS) pk xblat3d < dblat3.in
 	spike $(SPIKEARGS) pk xblat3c < cblat3.in
 	spike $(SPIKEARGS) pk xblat3z < zblat3.in
-	cat *.out
+	cat *.out | grep FAIL ; test $$? -eq 1
 
 clean: cleanobj cleanexe cleantest
 cleanobj:
