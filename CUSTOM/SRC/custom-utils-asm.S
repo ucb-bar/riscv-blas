@@ -29,13 +29,13 @@ vsetvlen:
         .globl dgemm_postalphaedge
 	.globl dgemm_postbetaedge
 	.globl dgemm_postedge
-sgemm:  
+sgemm:
 sgemm_pre:
         vadd vv0, vs0, vs0
         vadd vv1, vs0, vs0
         vadd vv2, vs0, vs0
         vadd vv3, vs0, vs0
-        vstop           
+        vstop
 sgemm_loop:
         vlw vv4, va0
         vfmadd.s vv0, vv4, vs3, vv0
@@ -87,7 +87,7 @@ dgemm_pre:
         vadd vv1, vs0, vs0
         vadd vv2, vs0, vs0
         vadd vv3, vs0, vs0
-        vstop           
+        vstop
 dgemm_loop:
         vld vv4, va0
         vfmadd.d vv0, vv4, vs3, vv0
@@ -135,13 +135,30 @@ dgemm_postedge:
         vsd vv0, va0
         vstop
 
-  
 
 
 
 
-
-
-
-
-	                                                        
+        .align 12
+        .globl blas1
+        .globl scopy_unit
+        .globl scopy_stride
+        .globl dcopy_unit
+        .globl dcopy_stride
+blas1:
+scopy_unit:
+        vlw vv0, va0
+        vsw vv0, va1
+        vstop
+scopy_stride:
+        vlstw vv0, va0, va2
+        vsstw vv0, va1, va3
+        vstop
+dcopy_unit:
+        vld vv0, va0
+        vsd vv0, va1
+        vstop
+dcopy_stride:
+        vlstd vv0, va0, va2
+        vsstd vv0, va1, va3
+        vstop
