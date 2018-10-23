@@ -336,118 +336,160 @@
 
     if (notb) {
 	if (nota) {
-
-/*           Form  C := alpha*A*B + beta*C. */
-
-	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		if (*beta == 0.) {
-		    i__2 = *m;
-		    for (i__ = 1; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
-/* L50: */
-		    }
-		} else if (*beta != 1.) {
-		    i__2 = *m;
-		    for (i__ = 1; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = *beta * c__[i__ + j * c_dim1];
-/* L60: */
-		    }
-		}
-		i__2 = *k;
-		for (l = 1; l <= i__2; ++l) {
-		    temp = *alpha * b[l + j * b_dim1];
-		    i__3 = *m;
-		    for (i__ = 1; i__ <= i__3; ++i__) {
-			c__[i__ + j * c_dim1] += temp * a[i__ + l * a_dim1];
-/* L70: */
-		    }
-/* L80: */
-		}
-/* L90: */
-	    }
+          /*           Form  C := alpha*A*B + beta*C. */
+          hwacha_init();
+          setvcfg(5, 0, 0, 1);
+          int vl = 0;
+          double* ca;
+          double* cb;
+          i__ = 0;
+          i__1 = *n;
+          i__2 = *k;
+          i__3 = *m;
+          ca = a;
+          cb = b;
+          void* pre  = PRELOAD("dgemm");
+          asm volatile ("vmcs vs1, %0" : : "r" (*alpha));
+          asm volatile ("vmcs vs2, %0" : : "r" (*beta));
+          while (i__3 - i__ > 0) {
+            vl = setvlen(i__3 - i__);
+            j = 1;
+            for (; j <= i__1 - 4; j+= 4) {
+              VF("dgemm_pre");
+              ca = a + i__ + 1 + a_dim1;
+              cb = b + 1 + j * b_dim1;
+              for (l = 1; l <= i__2; ++l) {
+                asm volatile ("vmca va0, %0" : : "r" (ca));
+                asm volatile ("vmcs vs3, %0" : : "r" (cb[0]));
+                asm volatile ("vmcs vs4, %0" : : "r" (cb[b_dim1]));
+                asm volatile ("vmcs vs5, %0" : : "r" (cb[b_dim1*2]));
+                asm volatile ("vmcs vs6, %0" : : "r" (cb[b_dim1*3]));
+                VF("dgemm_loop");
+                ca += a_dim1;
+                cb += 1;
+              }
+              VF("dgemm_postalpha");
+              asm volatile ("vmca va0, %0" : : "r" (c__ + 1 + j * c_dim1));
+              asm volatile ("vmca va1, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1));
+              asm volatile ("vmca va2, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1*2));
+              asm volatile ("vmca va3, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1*3));
+              if (*beta != 0.f) {
+                VF("dgemm_postbeta");
+              }
+              VF("dgemm_post");
+            }
+            for (; j <= i__1; ++j) {
+              VF("dgemm_preedge");
+              ca = a + i__ + 1 + a_dim1;
+              cb = b + 1 + j * b_dim1;
+              for (l = 1; l <= i__2; ++l) {
+                asm volatile ("vmca va0, %0" : : "r" (ca));
+                asm volatile ("vmcs vs3, %0" : : "r" (cb[0]));
+                VF("dgemm_loopedge");
+                ca += a_dim1;
+                cb += 1;
+              }
+              VF("dgemm_postalphaedge");
+              asm volatile ("vmca va0, %0" : : "r" (c__ + 1 + j * c_dim1));
+              if (*beta != 0.f) {
+                VF("dgemm_postbetaedge");
+              }
+              VF("dgemm_postedge");
+            }
+            i__ += vl;
+          }
+          return 0;
 	} else {
-
-/*           Form  C := alpha*A**T*B + beta*C */
-
-	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		i__2 = *m;
-		for (i__ = 1; i__ <= i__2; ++i__) {
-		    temp = 0.;
-		    i__3 = *k;
-		    for (l = 1; l <= i__3; ++l) {
-			temp += a[l + i__ * a_dim1] * b[l + j * b_dim1];
-/* L100: */
-		    }
-		    if (*beta == 0.) {
-			c__[i__ + j * c_dim1] = *alpha * temp;
-		    } else {
-			c__[i__ + j * c_dim1] = *alpha * temp + *beta * c__[
-				i__ + j * c_dim1];
-		    }
-/* L110: */
-		}
-/* L120: */
-	    }
-	}
+          /*           Form  C := alpha*A**T*B + beta*C */
+          double* ta = malloc(*k * *m * sizeof(double));
+          for (i__ = 1; i__ <= *m; i__++)
+            for (l = 1; l <= *k; l++)
+              {
+                ta[i__ - 1 + (l - 1) * *m] = a[l + i__ * a_dim1];
+              }
+          dgemm_("N", "N", m, n, k, alpha, ta, m, b + b_offset, ldb, beta, c__ + c_offset,
+                 ldc, 1, 1);
+          free(ta);
+          return 0;
+        }
     } else {
 	if (nota) {
-
-/*           Form  C := alpha*A*B**T + beta*C */
-
-	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		if (*beta == 0.) {
-		    i__2 = *m;
-		    for (i__ = 1; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = 0.;
-/* L130: */
-		    }
-		} else if (*beta != 1.) {
-		    i__2 = *m;
-		    for (i__ = 1; i__ <= i__2; ++i__) {
-			c__[i__ + j * c_dim1] = *beta * c__[i__ + j * c_dim1];
-/* L140: */
-		    }
-		}
-		i__2 = *k;
-		for (l = 1; l <= i__2; ++l) {
-		    temp = *alpha * b[j + l * b_dim1];
-		    i__3 = *m;
-		    for (i__ = 1; i__ <= i__3; ++i__) {
-			c__[i__ + j * c_dim1] += temp * a[i__ + l * a_dim1];
-/* L150: */
-		    }
-/* L160: */
-		}
-/* L170: */
-	    }
+          /*           Form  C := alpha*A*B**T + beta*C */
+          hwacha_init();
+          setvcfg(5, 0, 0, 1);
+          int vl = 0;
+          double* ca;
+          double* cb;
+          i__ = 0;
+          i__1 = *n;
+          i__2 = *k;
+          i__3 = *m;
+          ca = a;
+          cb = b;
+          void* pre  = PRELOAD("dgemm");
+          asm volatile ("vmcs vs1, %0" : : "r" (*alpha));
+          asm volatile ("vmcs vs2, %0" : : "r" (*beta));
+          while (i__3 - i__ > 0) {
+            vl = setvlen(i__3 - i__);
+            j = 1;
+            for (; j <= i__1 - 4; j+= 4) {
+              VF("dgemm_pre");
+              ca = a + i__ + 1 + a_dim1;
+              cb = b + j + b_dim1;
+              for (l = 1; l <= i__2; ++l) {
+                asm volatile ("vmca va0, %0" : : "r" (ca));
+                asm volatile ("vmcs vs3, %0" : : "r" (cb[0]));
+                asm volatile ("vmcs vs4, %0" : : "r" (cb[1]));
+                asm volatile ("vmcs vs5, %0" : : "r" (cb[2]));
+                asm volatile ("vmcs vs6, %0" : : "r" (cb[3]));
+                VF("dgemm_loop");
+                ca += a_dim1;
+                cb += b_dim1;
+              }
+              VF("dgemm_postalpha");
+              asm volatile ("vmca va0, %0" : : "r" (c__ + 1 + j * c_dim1));
+              asm volatile ("vmca va1, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1));
+              asm volatile ("vmca va2, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1*2));
+              asm volatile ("vmca va3, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1*3));
+              if (*beta != 0.f) {
+                VF("dgemm_postbeta");
+              }
+              VF("dgemm_post");
+            }
+            for (; j <= i__1; ++j) {
+              VF("dgemm_preedge");
+              ca = a + i__ + 1 + a_dim1;
+              cb = b + j + b_dim1;
+              for (l = 1; l <= i__2; ++l) {
+                asm volatile ("vmca va0, %0" : : "r" (ca));
+                asm volatile ("vmcs vs3, %0" : : "r" (cb[0]));
+                VF("dgemm_loopedge");
+                ca += a_dim1;
+                cb += b_dim1;
+              }
+              VF("dgemm_postalphaedge");
+              asm volatile ("vmca va0, %0" : : "r" (c__ + 1 + j * c_dim1));
+              if (*beta != 0.f) {
+                VF("dgemm_postbetaedge");
+              }
+              VF("dgemm_postedge");
+            }
+            i__ += vl;
+          }
+          return 0;
 	} else {
+          /*           Form  C := alpha*A**T*B**T + beta*C */
+          double* ta = malloc(*k * *m * sizeof(double));
 
-/*           Form  C := alpha*A**T*B**T + beta*C */
-
-	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		i__2 = *m;
-		for (i__ = 1; i__ <= i__2; ++i__) {
-		    temp = 0.;
-		    i__3 = *k;
-		    for (l = 1; l <= i__3; ++l) {
-			temp += a[l + i__ * a_dim1] * b[j + l * b_dim1];
-/* L180: */
-		    }
-		    if (*beta == 0.) {
-			c__[i__ + j * c_dim1] = *alpha * temp;
-		    } else {
-			c__[i__ + j * c_dim1] = *alpha * temp + *beta * c__[
-				i__ + j * c_dim1];
-		    }
-/* L190: */
-		}
-/* L200: */
-	    }
-	}
+          for (i__ = 1; i__ <= *m; i__++)
+            for (l = 1; l <= *k; l++)
+              {
+              ta[i__ - 1 + (l - 1) * *m] = a[l + i__ * a_dim1];
+              }
+          dgemm_("N", "T", m, n, k, alpha, ta, m, b + b_offset, ldb, beta, c__ + c_offset, ldc, 1, 1);
+          free(ta);
+          return 0;
+        }
     }
 
     return 0;
