@@ -11,6 +11,7 @@
 */
 
 #include "f2c.h"
+#include "custom-utils.h"
 
 /* > \brief \b DAXPY */
 
@@ -142,27 +143,23 @@
 
 /*        code for both increments equal to 1 */
 
-
-/*        clean-up loop */
-
-	m = *n % 4;
-	if (m != 0) {
-	    i__1 = m;
-	    for (i__ = 1; i__ <= i__1; ++i__) {
-		dy[i__] += *da * dx[i__];
-	    }
-	}
-	if (*n < 4) {
-	    return 0;
-	}
-	mp1 = m + 1;
-	i__1 = *n;
-	for (i__ = mp1; i__ <= i__1; i__ += 4) {
-	    dy[i__] += *da * dx[i__];
-	    dy[i__ + 1] += *da * dx[i__ + 1];
-	    dy[i__ + 2] += *da * dx[i__ + 2];
-	    dy[i__ + 3] += *da * dx[i__ + 3];
-	}
+        hwacha_init();
+        setvcfg(2, 0, 0, 1);
+        int vl = 0;
+        double* cx = dx;
+        double* cy = dy;
+        int cn = *n;
+        asm volatile ("vmcs vs1, %0" : : "r" (*da));
+        vl = setvlen(cn);
+        while (vl > 0) {
+          asm volatile ("vmca va0, %0" : : "r" (*cx));
+          asm volatile ("vmca va1, %0" : : "r" (*cy));
+          VF("daxpy_loop");
+          cx += vl;
+          cy += vl;
+          cn -= vl;
+          vl = setvlen(cn);
+        }
     } else {
 
 /*        code for unequal increments or equal increments */
@@ -176,12 +173,26 @@
 	if (*incy < 0) {
 	    iy = (-(*n) + 1) * *incy + 1;
 	}
-	i__1 = *n;
-	for (i__ = 1; i__ <= i__1; ++i__) {
-	    dy[iy] += *da * dx[ix];
-	    ix += *incx;
-	    iy += *incy;
-	}
+
+        hwacha_init();
+        setvcfg(2, 0, 0, 1);
+        int vl = 0;
+        double* cx = dx;
+        double* cy = dy;
+        int cn = *n;
+        asm volatile ("vmcs vs1, %0" : : "r" (*da));
+        asm volatile ("vmca va2, %0" : : "r" (*incx * sizeof(double)));
+        asm volatile ("vmca va3, %0" : : "r" (*incy * sizeof(double)));
+        vl = setvlen(cn);
+        while (vl > 0) {
+          asm volatile ("vmca va0, %0" : : "r" (*cx));
+          asm volatile ("vmca va1, %0" : : "r" (*cy));
+          VF("daxpy_stride_loop");
+          cx += (*incx * vl);
+          cy += (*incy * vl);
+          cn -= vl;
+          vl = setvlen(cn);
+        }
     }
     return 0;
 } /* daxpy_ */

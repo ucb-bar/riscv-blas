@@ -11,6 +11,7 @@
 */
 
 #include "f2c.h"
+#include "custom-utils.h"
 
 /* > \brief \b SAXPY */
 
@@ -142,27 +143,23 @@
 
 /*        code for both increments equal to 1 */
 
-
-/*        clean-up loop */
-
-	m = *n % 4;
-	if (m != 0) {
-	    i__1 = m;
-	    for (i__ = 1; i__ <= i__1; ++i__) {
-		sy[i__] += *sa * sx[i__];
-	    }
-	}
-	if (*n < 4) {
-	    return 0;
-	}
-	mp1 = m + 1;
-	i__1 = *n;
-	for (i__ = mp1; i__ <= i__1; i__ += 4) {
-	    sy[i__] += *sa * sx[i__];
-	    sy[i__ + 1] += *sa * sx[i__ + 1];
-	    sy[i__ + 2] += *sa * sx[i__ + 2];
-	    sy[i__ + 3] += *sa * sx[i__ + 3];
-	}
+        hwacha_init();
+        setvcfg(0, 2, 0, 1);
+        int vl = 0;
+        float* cx = dx;
+        float* cy = dy;
+        int cn = *n;
+        asm volatile ("vmcs vs1, %0" : : "r" (*da));
+        vl = setvlen(cn);
+        while (vl > 0) {
+          asm volatile ("vmca va0, %0" : : "r" (*cx));
+          asm volatile ("vmca va1, %0" : : "r" (*cy));
+          VF("saxpy_loop");
+          cx += vl;
+          cy += vl;
+          cn -= vl;
+          vl = setvlen(cn);
+        }
     } else {
 
 /*        code for unequal increments or equal increments */
@@ -176,12 +173,26 @@
 	if (*incy < 0) {
 	    iy = (-(*n) + 1) * *incy + 1;
 	}
-	i__1 = *n;
-	for (i__ = 1; i__ <= i__1; ++i__) {
-	    sy[iy] += *sa * sx[ix];
-	    ix += *incx;
-	    iy += *incy;
-	}
+
+        hwacha_init();
+        setvcfg(0, 2, 0, 1);
+        int vl = 0;
+        float* cx = dx;
+        float* cy = dy;
+        int cn = *n;
+        asm volatile ("vmcs vs1, %0" : : "r" (*da));
+        asm volatile ("vmca va2, %0" : : "r" (*incx * sizeof(float)));
+        asm volatile ("vmca va3, %0" : : "r" (*incy * sizeof(float)));
+        vl = setvlen(cn);
+        while (vl > 0) {
+          asm volatile ("vmca va0, %0" : : "r" (*cx));
+          asm volatile ("vmca va1, %0" : : "r" (*cy));
+          VF("saxpy_stride_loop");
+          cx += (*incx * vl);
+          cy += (*incy * vl);
+          cn -= vl;
+          vl = setvlen(cn);
+        }
     }
     return 0;
 } /* saxpy_ */

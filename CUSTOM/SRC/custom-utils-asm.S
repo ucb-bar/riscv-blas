@@ -149,6 +149,10 @@ dgemm_postedge:
         .globl dcopy_stride
         .globl dscal_unit
         .globl dscal_stride
+        .globl saxpy_loop
+        .globl saxpy_stride_loop
+        .globl daxpy_loop
+        .globl daxpy_stride_loop
 
 blas1:
 scopy_unit:
@@ -186,4 +190,28 @@ dscal_stride:
         vlstd vv0, va0, va1
         vfmul.d vv0, vv0, vs1
         vsstd vv0, va0, va1
+        vstop
+saxpy_loop:
+        vlw vv0, va0
+        vlw vv1, va1
+        vfmadd.s vv1, vs1, vv0, vv1
+        vsw vv1, va1
+        vstop
+saxpy_stride_loop:
+        vlstw vv0, va0, va2
+        vlstw vv1, va1, va3
+        vfmadd.s vv1, vs1, vv0, vv1
+        vsstw vv1, va1, va3
+        vstop
+daxpy_loop:
+        vld vv0, va0
+        vld vv1, va1
+        vfmadd.d vv1, vs1, vv0, vv1
+        vsd vv1, va1
+        vstop  
+daxpy_loop:
+        vlstd vv0, va0, va2
+        vlstd vv1, va1, va3
+        vfmadd.d vv1, vs1, vv0, vv1
+        vsstd vv1, va1, va3
         vstop
