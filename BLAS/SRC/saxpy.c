@@ -144,8 +144,8 @@
     hwacha_init();
     setvcfg(0, 2, 0, 1);
     int vl = 0;
-    float* cx = dx;
-    float* cy = dy;
+    float* cx = sx;
+    float* cy = sy;
     int cn = *n;
     void* pre = PRELOAD("blas1");
 
@@ -153,7 +153,7 @@
 
 /*        code for both increments equal to 1 */
 
-        asm volatile ("vmcs vs1, %0" : : "r" (*da));
+        asm volatile ("vmcs vs1, %0" : : "r" (*sa));
         vl = setvlen(cn);
         while (vl > 0) {
           asm volatile ("vmca va0, %0" : : "r" (*cx));
@@ -178,7 +178,7 @@
 	    iy = (-(*n) + 1) * *incy + 1;
 	}
 
-        asm volatile ("vmcs vs1, %0" : : "r" (*da));
+        asm volatile ("vmcs vs1, %0" : : "r" (*sa));
         asm volatile ("vmca va2, %0" : : "r" (*incx * sizeof(float)));
         asm volatile ("vmca va3, %0" : : "r" (*incy * sizeof(float)));
         vl = setvlen(cn);

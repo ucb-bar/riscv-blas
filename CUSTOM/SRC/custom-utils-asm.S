@@ -209,7 +209,7 @@ daxpy_loop:
         vfmadd.d vv1, vs1, vv0, vv1
         vsd vv1, va1
         vstop  
-daxpy_loop:
+daxpy_stride_loop:
         vlstd vv0, va0, va2
         vlstd vv1, va1, va3
         vfmadd.d vv1, vs1, vv0, vv1
