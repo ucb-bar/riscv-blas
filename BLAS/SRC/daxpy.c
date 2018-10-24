@@ -139,16 +139,20 @@
     if (*da == 0.) {
 	return 0;
     }
+
+
+    hwacha_init();
+    setvcfg(2, 0, 0, 1);
+    int vl = 0;
+    double* cx = dx;
+    double* cy = dy;
+    int cn = *n;
+    void* pre = PRELOAD("blas1");
+
     if (*incx == 1 && *incy == 1) {
 
 /*        code for both increments equal to 1 */
 
-        hwacha_init();
-        setvcfg(2, 0, 0, 1);
-        int vl = 0;
-        double* cx = dx;
-        double* cy = dy;
-        int cn = *n;
         asm volatile ("vmcs vs1, %0" : : "r" (*da));
         vl = setvlen(cn);
         while (vl > 0) {
@@ -174,12 +178,6 @@
 	    iy = (-(*n) + 1) * *incy + 1;
 	}
 
-        hwacha_init();
-        setvcfg(2, 0, 0, 1);
-        int vl = 0;
-        double* cx = dx;
-        double* cy = dy;
-        int cn = *n;
         asm volatile ("vmcs vs1, %0" : : "r" (*da));
         asm volatile ("vmca va2, %0" : : "r" (*incx * sizeof(double)));
         asm volatile ("vmca va3, %0" : : "r" (*incy * sizeof(double)));
