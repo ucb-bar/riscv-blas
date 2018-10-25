@@ -11,6 +11,7 @@
 */
 
 #include "f2c.h"
+#include "custom-utils.h"
 
 /* > \brief \b SASUM */
 
@@ -123,40 +124,88 @@ real sasum_(integer *n, real *sx, integer *incx)
     if (*incx == 1) {
 /*        code for increment equal to 1 */
 
+        hwacha_init();
+        setvcfg(0, 2, 0, 2);
+        float* cx = sx + 1;
+        void* pre = PRELOAD("blas1");
+        int vl = setvlen(*n);
+        VF("sasum_pre");
+        i__ = 0;
+        i__1 = *n;
+        //multiply accumulate
+        while (i__1 - i__ > 0) {
+            vl = setvlen(i__1 - i__);
+            asm volatile ("vmca va1, %0" : : "r" (cx));
+            VF("sasum_loop");
+            cx += vl;
+            i__ += vl;
+        }
 
-/*        clean-up loop */
+        vl = setvlen(*n);
+        int vl_pad = vl + vl % 2;
+        float* ta = (float*)malloc(vl_pad * sizeof(float));
+        ta[vl_pad - 1] = 0.f;
+        asm volatile ("vmca va0, %0" : : "r" (ta));
+        VF("sasum_post");
 
-	m = *n % 6;
-	if (m != 0) {
-	    i__1 = m;
-	    for (i__ = 1; i__ <= i__1; ++i__) {
-		stemp += (r__1 = sx[i__], dabs(r__1));
-	    }
-	    if (*n < 6) {
-		ret_val = stemp;
-		return ret_val;
-	    }
-	}
-	mp1 = m + 1;
-	i__1 = *n;
-	for (i__ = mp1; i__ <= i__1; i__ += 6) {
-	    stemp = stemp + (r__1 = sx[i__], dabs(r__1)) + (r__2 = sx[i__ + 1]
-		    , dabs(r__2)) + (r__3 = sx[i__ + 2], dabs(r__3)) + (r__4 =
-		     sx[i__ + 3], dabs(r__4)) + (r__5 = sx[i__ + 4], dabs(
-		    r__5)) + (r__6 = sx[i__ + 5], dabs(r__6));
-	}
+        float *ta2;
+        i__1 = vl_pad >> 1;
+        while (i__1 > 0) {
+            vl = setvlen(i__1);
+            ta2 = ta + vl;
+            asm volatile ("vmca va1, %0" : : "r" (ta2));
+            VF("sasum_reduce_loop");
+            i__1 = vl >> 1;
+        }
+
+        ret_val = *ta;
+        free(ta);
+        stemp = ret_val;
     } else {
 
 /*        code for increment not equal to 1 */
 
-	nincx = *n * *incx;
-	i__1 = nincx;
-	i__2 = *incx;
-	for (i__ = 1; i__2 < 0 ? i__ >= i__1 : i__ <= i__1; i__ += i__2) {
-	    stemp += (r__1 = sx[i__], dabs(r__1));
+        hwacha_init();
+        setvcfg(0, 2, 0, 2);
+        float* cx = sx + 1;
+	if (*incx < 0) {
+	    cx = sx + (-(*n) + 1) * *incx + 1;
 	}
+        void* pre = PRELOAD("blas1");
+        int vl = setvlen(*n);
+        VF("sasum_pre");
+        asm volatile ("vmca va2, %0" : : "r" (*incx << 2));
+        i__ = 0;
+        i__1 = *n;
+        //multiply accumulate
+        while (i__1 - i__ > 0) {
+            vl = setvlen(i__1 - i__);
+            asm volatile ("vmca va1, %0" : : "r" (cx));
+            VF("sasum_stride_loop");
+            cx += vl;
+            i__ += vl;
+        }
+
+        vl = setvlen(*n);
+        int vl_pad = vl + vl % 2;
+        float* ta = (float*)malloc(vl_pad * sizeof(float));
+        ta[vl_pad - 1] = 0.f;
+        asm volatile ("vmca va0, %0" : : "r" (ta));
+        VF("sasum_post");
+
+        float *ta2;
+        i__1 = vl_pad >> 1;
+        while (i__1 > 0) {
+            vl = setvlen(i__1);
+            ta2 = ta + vl;
+            asm volatile ("vmca va1, %0" : : "r" (ta2));
+            VF("sasum_reduce_loop");
+            i__1 = vl >> 1;
+        }
+
+        ret_val = *ta;
+        free(ta);
     }
-    ret_val = stemp;
     return ret_val;
 } /* sasum_ */
 
