@@ -144,9 +144,8 @@
     hwacha_init();
     setvcfg(0, 2, 0, 1);
     int vl = 0;
-    float* cx = sx;
-    float* cy = sy;
-    int cn = *n;
+    float* cx = sx + 1;
+    float* cy = sy + 1;
     void* pre = PRELOAD("blas1");
 
     if (*incx == 1 && *incy == 1) {
@@ -154,15 +153,16 @@
 /*        code for both increments equal to 1 */
 
         asm volatile ("vmcs vs1, %0" : : "r" (*sa));
-        vl = setvlen(cn);
-        while (vl > 0) {
-          asm volatile ("vmca va0, %0" : : "r" (*cx));
-          asm volatile ("vmca va1, %0" : : "r" (*cy));
+        i__ = 0;
+        i__1 = *n;
+        while (i__1 - i__ > 0) {
+          vl = setvlen(i__1 - i__);
+          asm volatile ("vmca va0, %0" : : "r" (cx));
+          asm volatile ("vmca va1, %0" : : "r" (cy));
           VF("saxpy_loop");
           cx += vl;
           cy += vl;
-          cn -= vl;
-          vl = setvlen(cn);
+          i__ += vl;
         }
     } else {
 
@@ -172,24 +172,25 @@
 	ix = 1;
 	iy = 1;
 	if (*incx < 0) {
-	    ix = (-(*n) + 1) * *incx + 1;
+	    cx = sx + (-(*n) + 1) * *incx + 1;
 	}
 	if (*incy < 0) {
-	    iy = (-(*n) + 1) * *incy + 1;
+	    cy = sy + (-(*n) + 1) * *incy + 1;
 	}
 
         asm volatile ("vmcs vs1, %0" : : "r" (*sa));
-        asm volatile ("vmca va2, %0" : : "r" (*incx * sizeof(float)));
-        asm volatile ("vmca va3, %0" : : "r" (*incy * sizeof(float)));
-        vl = setvlen(cn);
-        while (vl > 0) {
-          asm volatile ("vmca va0, %0" : : "r" (*cx));
-          asm volatile ("vmca va1, %0" : : "r" (*cy));
+        asm volatile ("vmca va2, %0" : : "r" (*incx << 2));
+        asm volatile ("vmca va3, %0" : : "r" (*incy << 2));
+        i__ = 0;
+        i__1 = *n;
+        while (i__1 - i__ > 0) {
+          vl = setvlen(i__1 - i__);
+          asm volatile ("vmca va0, %0" : : "r" (cx));
+          asm volatile ("vmca va1, %0" : : "r" (cy));
           VF("saxpy_stride_loop");
           cx += (*incx * vl);
           cy += (*incy * vl);
-          cn -= vl;
-          vl = setvlen(cn);
+          i__ += vl;
         }
     }
     return 0;

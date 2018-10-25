@@ -139,9 +139,8 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         int vl = 0;
         float* cy = sy+1;
         float* cx = sx+1;
-        int cn = *n;
         void* pre = PRELOAD("blas1");
-        vl = setvlen(cn);
+        vl = setvlen(*n);
         VF("sdot_pre");
         i__ = 0;
         i__1 = *n;
@@ -190,15 +189,12 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         int incy_sign = 1;
 	if (*incx < 0) {
 	    cx = sx + (-(*n) + 1) * *incx + 1;
-            incx_sign = -1;
 	}
 	if (*incy < 0) {
 	    cy = sy + (-(*n) + 1) * *incy + 1;
-            incy_sign = -1;
 	}
-        int cn = *n;
         void* pre = PRELOAD("blas1");
-        vl = setvlen(cn);
+        vl = setvlen(*n);
         VF("sdot_pre");
         asm volatile ("vmca va3, %0" : : "r" (*incx << 2));
         asm volatile ("vmca va4, %0" : : "r" (*incy << 2));
