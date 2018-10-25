@@ -225,7 +225,7 @@ sdot_pre:
 sdot_loop:
         vlw vv0, va0
         vlw vv1, va1
-        vfmadd.s vv2, vv2, vv0, vv1
+        vfmadd.s vv2, vv0, vv1, vv2
         vstop
 sdot_post:
         vsw vv2, va2
@@ -238,7 +238,7 @@ sdot_reduce_loop:
 sdot_stride_loop:
         vlstw vv0, va0, va3
         vlstw vv1, va1, va4
-        vfmadd.s vv2, vv2, vv0, vv1
+        vfmadd.s vv2, vv0, vv1, vv2
         vstop
 
 

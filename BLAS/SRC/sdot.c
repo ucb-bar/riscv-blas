@@ -105,7 +105,6 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
     static integer i__, m, ix, iy, mp1;
     static real stemp;
 
-
 /*  -- Reference BLAS level1 routine (version 3.8.0) -- */
 /*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    -- */
 /*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..-- */
@@ -135,42 +134,43 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
     if (*incx == 1 && *incy == 1) {
 
 /*        code for both increments equal to 1 */
-
         hwacha_init();
         setvcfg(0, 3, 0, 1);
         int vl = 0;
-        float* cy = sy;
-        float* cx = sx;
+        float* cy = sy+1;
+        float* cx = sx+1;
         int cn = *n;
         void* pre = PRELOAD("blas1");
         vl = setvlen(cn);
         VF("sdot_pre");
+        i__ = 0;
+        i__1 = *n;
         //multiply accumulate
-        while (vl > 0) {
+        while (i__1 - i__ > 0) {
+            vl = setvlen(i__1 - i__);
             asm volatile ("vmca va0, %0" : : "r" (cx));
             asm volatile ("vmca va1, %0" : : "r" (cy));
             VF("sdot_loop");
             cx += vl;
             cy += vl;
-            cn -= vl;
-            vl = setvlen(cn);
+            i__ += vl;
         }
 
         //reduce 
-        vl = setvlen(cn);
+        vl = setvlen(*n);
         int vl_pad = vl + vl % 2;
-        float* ta = malloc(vl_pad * sizeof(float));
+        float* ta = (float*)malloc(vl_pad * sizeof(float));
         ta[vl_pad - 1] = 0.f;
         asm volatile ("vmca va2, %0" : : "r" (ta));
         VF("sdot_post");
-
         float *ta2;
-        vl = setvlen(vl_pad >> 1);
+        vl_pad = vl_pad >> 1; 
+        vl = setvlen(vl_pad);
         while (vl > 0) {
             ta2 = ta + vl;
             asm volatile ("vmca va1, %0" : : "r" (ta2));
             VF("sdot_reduce_loop");
-            vl_pad -= vl;
+            vl_pad = vl_pad >> 1;
             vl = setvlen(vl_pad);
         }
 
@@ -184,8 +184,8 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         hwacha_init();
         setvcfg(0, 3, 0, 1);
         int vl = 0;
-        float* cy = sy;
-        float* cx = sx;
+        float* cy = sy+1;
+        float* cx = sx+1;
         int incx_sign = 1;
         int incy_sign = 1;
 	if (*incx < 0) {
@@ -200,34 +200,37 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         void* pre = PRELOAD("blas1");
         vl = setvlen(cn);
         VF("sdot_pre");
-        asm volatile ("vmca va3, %0" : : "r" (*incx));
-        asm volatile ("vmca va4, %0" : : "r" (*incy));
+        asm volatile ("vmca va3, %0" : : "r" (*incx << 2));
+        asm volatile ("vmca va4, %0" : : "r" (*incy << 2));
+        i__ = 0;
+        i__1 = *n;
         //multiply accumulate
-        while (vl > 0) {
+        while (i__1 - i__ > 0) {
+            vl = setvlen(i__1 - i__);
             asm volatile ("vmca va0, %0" : : "r" (cx));
             asm volatile ("vmca va1, %0" : : "r" (cy));
             VF("sdot_stride_loop");
-            cx += incx_sign * vl;
-            cy += incy_sign * vl;
-            cn -= vl;
-            vl = setvlen(cn);
+            cx +=  vl;
+            cy +=  vl;
+            i__ += vl;
         }
 
         //reduce 
-        vl = setvlen(cn);
+        vl = setvlen(*n);
         int vl_pad = vl + vl % 2;
-        float* ta = malloc(vl_pad * sizeof(float));
+        float* ta = (float*)malloc(vl_pad * sizeof(float));
         ta[vl_pad - 1] = 0.f;
         asm volatile ("vmca va2, %0" : : "r" (ta));
         VF("sdot_post");
 
         float *ta2;
-        vl = setvlen(vl_pad >> 1);
+        vl_pad = vl_pad >> 1;
+        vl = setvlen(vl_pad);
         while (vl > 0) {
             ta2 = ta + vl;
             asm volatile ("vmca va1, %0" : : "r" (ta2));
             VF("sdot_reduce_loop");
-            vl_pad -= vl;
+            vl_pad = vl_pad >> 1;
             vl = setvlen(vl_pad);
         }
 
