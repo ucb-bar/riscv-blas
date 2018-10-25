@@ -331,19 +331,18 @@
 
 /*        Form  y := alpha*A*x + y. */
 
-/*
         hwacha_init();
         setvcfg(0, 3, 0, 1);
         int vl = 0;
-        float* cy = y;
-        float* cx = x;
-        float* ca = a;
-        int cn = *n;
         void* pre = PRELOAD("blas2");
-        vl = setvlen(cn);
+        i__ = 0;
+        i__1 = *n;
+	float* cy = y + ky;
+        float* cx = x + kx;
+        float* ca = a;
 
         asm volatile ("vmcs vs1, %0" : : "r" (a_dim1));
-*/
+
 	jx = kx;
 	if (*incy == 1) {
 	    i__1 = *n;
