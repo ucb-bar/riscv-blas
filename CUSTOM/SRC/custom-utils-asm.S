@@ -220,7 +220,7 @@ daxpy_stride_loop:
         vsstd vv1, va1, va3
         vstop
 sdot_pre:
-        vsub vv2, vv2, vv2
+        vfsub vv2, vv2, vv2
         vstop
 sdot_loop:
         vlw vv0, va0
@@ -232,7 +232,7 @@ sdot_post:
         vstop 
 sdot_reduce_loop:
         vlw vv1, va1
-        vadd vv2, vv2, vv1
+        vfadd vv2, vv2, vv1
         vsw vv2, va2
         vstop
 sdot_stride_loop:
