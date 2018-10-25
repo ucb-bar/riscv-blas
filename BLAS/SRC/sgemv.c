@@ -275,51 +275,51 @@
         hwacha_init();
         setvcfg(0, 1, 0, 1);
         int vl = 0;
-        float* cy = y;
-        int cn = leny;
+	float* cy = y + ky;
         void* pre = PRELOAD("blas2");
-        vl = setvlen(cn);
-
+        i__ = 0;
+        i__1 = leny;
 	if (*incy == 1) {
 	    if (*beta == 0.f) {
-                while (vl > 0) {
+                while (i__1 - i__ > 0) {
+                  vl = setvlen(i__1 - i__);
                   asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_zero_loop");
                   cy += vl;
-                  cn -= vl;
-                  vl = setvlen(cn);
+                  i__ += vl;
                 }
 
 	    } else {
                 asm volatile ("vmcs vs1, %0" : : "r" (*beta));
-                while (vl > 0) {
+                i__ = 0;
+                i__1 = leny;
+                while (i__1 - i__ > 0) {
+                  vl = setvlen(i__1 - i__);
                   asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_beta_loop");
                   cy += vl;
-                  cn -= vl;
-                  vl = setvlen(cn);
+                  i__ += vl;
                 }
 	    }
 	} else {
-	    iy = ky;
 	    if (*beta == 0.f) {
-                asm volatile ("vmca va1, %0" : : "r" (*incy));
-                while (vl > 0) {
+                asm volatile ("vmca va1, %0" : : "r" (*incy << 2));
+                while (i__1 - i__ > 0) {
+                  vl = setvlen(i__1 - i__);
                   asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_stride_zero_loop");
-                  cy += vl;
-                  cn -= vl;
-                  vl = setvlen(cn);
+                  cy += (*incy * vl);
+                  i__ += vl;
                 }
 	    } else {
                 asm volatile ("vmcs vs1, %0" : : "r" (*beta));
-                asm volatile ("vmca va1, %0" : : "r" (*incy));
-                while (vl > 0) {
+                asm volatile ("vmca va1, %0" : : "r" (*incy << 2));
+                while (i__1 - i__  > 0) {
+                  vl = setvlen(i__1 - i__);
                   asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_stride_beta_loop");
-                  cy += vl;
-                  cn -= vl;
-                  vl = setvlen(cn);
+                  cy += (*incy * vl);
+                  i__ += vl;
                 }
 	    }
 	}
