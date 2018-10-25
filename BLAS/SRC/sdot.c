@@ -185,8 +185,6 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         int vl = 0;
         float* cy = sy+1;
         float* cx = sx+1;
-        int incx_sign = 1;
-        int incy_sign = 1;
 	if (*incx < 0) {
 	    cx = sx + (-(*n) + 1) * *incx + 1;
 	}
@@ -231,7 +229,6 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
 
         ret_val = *ta;
         free(ta);
-        return ret_val;
     }
     return ret_val;
 } /* sdot_ */
