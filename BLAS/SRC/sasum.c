@@ -160,7 +160,6 @@ real sasum_(integer *n, real *sx, integer *incx)
 
         ret_val = *ta;
         free(ta);
-        stemp = ret_val;
     } else {
 
 /*        code for increment not equal to 1 */

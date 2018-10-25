@@ -11,6 +11,7 @@
 */
 
 #include "f2c.h"
+#include "custom-utils.h"
 
 /* > \brief \b DASUM */
 
@@ -123,40 +124,87 @@ doublereal dasum_(integer *n, doublereal *dx, integer *incx)
     if (*incx == 1) {
 /*        code for increment equal to 1 */
 
+        hwacha_init();
+        setvcfg(2, 0, 0, 2);
+        double* cx = dx + 1;
+        void* pre = PRELOAD("blas1");
+        int vl = setvlen(*n);
+        VF("dasum_pre");
+        i__ = 0;
+        i__1 = *n;
+        //multiply accumulate
+        while (i__1 - i__ > 0) {
+            vl = setvlen(i__1 - i__);
+            asm volatile ("vmca va1, %0" : : "r" (cx));
+            VF("dasum_loop");
+            cx += vl;
+            i__ += vl;
+        }
 
-/*        clean-up loop */
+        vl = setvlen(*n);
+        int vl_pad = vl + vl % 2;
+        double* ta = (double*)malloc(vl_pad * sizeof(double));
+        ta[vl_pad - 1] = 0.f;
+        asm volatile ("vmca va0, %0" : : "r" (ta));
+        VF("dasum_post");
 
-	m = *n % 6;
-	if (m != 0) {
-	    i__1 = m;
-	    for (i__ = 1; i__ <= i__1; ++i__) {
-		dtemp += (d__1 = dx[i__], abs(d__1));
-	    }
-	    if (*n < 6) {
-		ret_val = dtemp;
-		return ret_val;
-	    }
-	}
-	mp1 = m + 1;
-	i__1 = *n;
-	for (i__ = mp1; i__ <= i__1; i__ += 6) {
-	    dtemp = dtemp + (d__1 = dx[i__], abs(d__1)) + (d__2 = dx[i__ + 1],
-		     abs(d__2)) + (d__3 = dx[i__ + 2], abs(d__3)) + (d__4 = 
-		    dx[i__ + 3], abs(d__4)) + (d__5 = dx[i__ + 4], abs(d__5)) 
-		    + (d__6 = dx[i__ + 5], abs(d__6));
-	}
+        double *ta2;
+        i__1 = vl_pad >> 1;
+        while (i__1 > 0) {
+            vl = setvlen(i__1);
+            ta2 = ta + vl;
+            asm volatile ("vmca va1, %0" : : "r" (ta2));
+            VF("dasum_reduce_loop");
+            i__1 = vl >> 1;
+        }
+
+        ret_val = *ta;
+        free(ta);
     } else {
 
 /*        code for increment not equal to 1 */
 
-	nincx = *n * *incx;
-	i__1 = nincx;
-	i__2 = *incx;
-	for (i__ = 1; i__2 < 0 ? i__ >= i__1 : i__ <= i__1; i__ += i__2) {
-	    dtemp += (d__1 = dx[i__], abs(d__1));
+        hwacha_init();
+        setvcfg(0, 2, 0, 2);
+        double* cx = dx + 1;
+	if (*incx < 0) {
+	    cx = dx + (-(*n) + 1) * *incx + 1;
 	}
+        void* pre = PRELOAD("blas1");
+        int vl = setvlen(*n);
+        VF("dasum_pre");
+        asm volatile ("vmca va2, %0" : : "r" (*incx << 3));
+        i__ = 0;
+        i__1 = *n;
+        //multiply accumulate
+        while (i__1 - i__ > 0) {
+            vl = setvlen(i__1 - i__);
+            asm volatile ("vmca va1, %0" : : "r" (cx));
+            VF("dasum_stride_loop");
+            cx += vl;
+            i__ += vl;
+        }
+
+        vl = setvlen(*n);
+        int vl_pad = vl + vl % 2;
+        double* ta = (double*)malloc(vl_pad * sizeof(double));
+        ta[vl_pad - 1] = 0.f;
+        asm volatile ("vmca va0, %0" : : "r" (ta));
+        VF("dasum_post");
+
+        double *ta2;
+        i__1 = vl_pad >> 1;
+        while (i__1 > 0) {
+            vl = setvlen(i__1);
+            ta2 = ta + vl;
+            asm volatile ("vmca va1, %0" : : "r" (ta2));
+            VF("dasum_reduce_loop");
+            i__1 = vl >> 1;
+        }
+
+        ret_val = *ta;
+        free(ta);
     }
-    ret_val = dtemp;
     return ret_val;
 } /* dasum_ */
 

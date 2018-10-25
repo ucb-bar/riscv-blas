@@ -168,6 +168,11 @@ dgemm_postedge:
         .globl sasum_post
         .globl sasum_reduce_loop
         .globl sasum_stride_loop
+        .globl dasum_pre
+        .globl dasum_loop
+        .globl dasum_post
+        .globl dasum_reduce_loop
+        .globl dasum_stride_loop
 blas1:
 scopy_unit:
         vlw vv0, va0
@@ -294,6 +299,30 @@ sasum_stride_loop:
         vcmpflt.s vp1, vv1, vs0
         @vp1 vfsub.s vv1, vs0, vv1
         vfadd.s vv0, vv0, vv1
+        vstop
+dasum_pre:
+        vfsub.d vv0, vv0, vv0
+        vfsub.d vs0, vs0, vs0
+        vstop
+dasum_loop:
+        vld vv1, va1
+        vcmpflt.d vp1, vv1, vs0
+        @vp1 vfsub.d vv1, vs0, vv1
+        vfadd.d vv0, vv0, vv1
+        vstop
+dasum_post:
+        vsd vv0, va0
+        vstop 
+dasum_reduce_loop:
+        vld vv1, va1
+        vfadd.d vv0, vv0, vv1
+        vsd vv0, va0
+        vstop
+dasum_stride_loop:
+        vlstd vv1, va1, va2
+        vcmpflt.d vp1, vv1, vs0
+        @vp1 vfsub.d vv1, vs0, vv1
+        vfadd.d vv0, vv0, vv1
         vstop
 
 
