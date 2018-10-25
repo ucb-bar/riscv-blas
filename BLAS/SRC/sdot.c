@@ -162,15 +162,15 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         ta[vl_pad - 1] = 0.f;
         asm volatile ("vmca va2, %0" : : "r" (ta));
         VF("sdot_post");
+
         float *ta2;
-        vl_pad = vl_pad >> 1; 
-        vl = setvlen(vl_pad);
-        while (vl > 0) {
+        i__1 = vl_pad >> 1;
+        while (i__1 > 0) {
+            vl = setvlen(i__1);
             ta2 = ta + vl;
             asm volatile ("vmca va1, %0" : : "r" (ta2));
             VF("sdot_reduce_loop");
-            vl_pad = vl_pad >> 1;
-            vl = setvlen(vl_pad);
+            i__1 = vl >> 1;
         }
 
         ret_val = *ta;
@@ -220,14 +220,13 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         VF("sdot_post");
 
         float *ta2;
-        vl_pad = vl_pad >> 1;
-        vl = setvlen(vl_pad);
-        while (vl > 0) {
+        i__1 = vl_pad >> 1;
+        while (i__1 > 0) {
+            vl = setvlen(i__1);
             ta2 = ta + vl;
             asm volatile ("vmca va1, %0" : : "r" (ta2));
             VF("sdot_reduce_loop");
-            vl_pad = vl_pad >> 1;
-            vl = setvlen(vl_pad);
+            i__1 = vl >> 1;
         }
 
         ret_val = *ta;
