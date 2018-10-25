@@ -11,6 +11,7 @@
 */
 
 #include "f2c.h"
+#include "custom-utils.h"
 
 /* > \brief \b SGEMV */
 
@@ -270,36 +271,56 @@
 /*     First form  y := beta*y. */
 
     if (*beta != 1.f) {
+
+        hwacha_init();
+        setvcfg(0, 1, 0, 1);
+        int vl = 0;
+        float* cy = y;
+        int cn = leny;
+        void* pre = PRELOAD("blas2");
+        vl = setvlen(cn);
+
 	if (*incy == 1) {
 	    if (*beta == 0.f) {
-		i__1 = leny;
-		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[i__] = 0.f;
-/* L10: */
-		}
+                while (vl > 0) {
+                  asm volatile ("vmca va0, %0" : : "r" (*cy));
+                  VF("sgemv_zero_loop");
+                  cy += vl;
+                  cn -= vl;
+                  vl = setvlen(cn);
+                }
+
 	    } else {
-		i__1 = leny;
-		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[i__] = *beta * y[i__];
-/* L20: */
-		}
+                asm volatile ("vmcs vs1, %0" : : "r" (*beta));
+                while (vl > 0) {
+                  asm volatile ("vmca va0, %0" : : "r" (*cy));
+                  VF("sgemv_beta_loop");
+                  cy += vl;
+                  cn -= vl;
+                  vl = setvlen(cn);
+                }
 	    }
 	} else {
 	    iy = ky;
 	    if (*beta == 0.f) {
-		i__1 = leny;
-		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[iy] = 0.f;
-		    iy += *incy;
-/* L30: */
-		}
+                asm volatile ("vmca va1, %0" : : "r" (*incy));
+                while (vl > 0) {
+                  asm volatile ("vmca va0, %0" : : "r" (*cy));
+                  VF("sgemv_stride_zero_loop");
+                  cy += vl;
+                  cn -= vl;
+                  vl = setvlen(cn);
+                }
 	    } else {
-		i__1 = leny;
-		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[iy] = *beta * y[iy];
-		    iy += *incy;
-/* L40: */
-		}
+                asm volatile ("vmcs vs1, %0" : : "r" (*beta));
+                asm volatile ("vmca va1, %0" : : "r" (*incy));
+                while (vl > 0) {
+                  asm volatile ("vmca va0, %0" : : "r" (*cy));
+                  VF("sgemv_stride_beta_loop");
+                  cy += vl;
+                  cn -= vl;
+                  vl = setvlen(cn);
+                }
 	    }
 	}
     }
@@ -310,6 +331,19 @@
 
 /*        Form  y := alpha*A*x + y. */
 
+/*
+        hwacha_init();
+        setvcfg(0, 3, 0, 1);
+        int vl = 0;
+        float* cy = y;
+        float* cx = x;
+        float* ca = a;
+        int cn = *n;
+        void* pre = PRELOAD("blas2");
+        vl = setvlen(cn);
+
+        asm volatile ("vmcs vs1, %0" : : "r" (a_dim1));
+*/
 	jx = kx;
 	if (*incy == 1) {
 	    i__1 = *n;
