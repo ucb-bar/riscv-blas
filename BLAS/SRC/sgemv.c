@@ -283,7 +283,7 @@
 	if (*incy == 1) {
 	    if (*beta == 0.f) {
                 while (vl > 0) {
-                  asm volatile ("vmca va0, %0" : : "r" (*cy));
+                  asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_zero_loop");
                   cy += vl;
                   cn -= vl;
@@ -293,7 +293,7 @@
 	    } else {
                 asm volatile ("vmcs vs1, %0" : : "r" (*beta));
                 while (vl > 0) {
-                  asm volatile ("vmca va0, %0" : : "r" (*cy));
+                  asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_beta_loop");
                   cy += vl;
                   cn -= vl;
@@ -305,7 +305,7 @@
 	    if (*beta == 0.f) {
                 asm volatile ("vmca va1, %0" : : "r" (*incy));
                 while (vl > 0) {
-                  asm volatile ("vmca va0, %0" : : "r" (*cy));
+                  asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_stride_zero_loop");
                   cy += vl;
                   cn -= vl;
@@ -315,7 +315,7 @@
                 asm volatile ("vmcs vs1, %0" : : "r" (*beta));
                 asm volatile ("vmca va1, %0" : : "r" (*incy));
                 while (vl > 0) {
-                  asm volatile ("vmca va0, %0" : : "r" (*cy));
+                  asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_stride_beta_loop");
                   cy += vl;
                   cn -= vl;
