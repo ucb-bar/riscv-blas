@@ -158,6 +158,11 @@ dgemm_postedge:
         .globl sdot_post
         .globl sdot_reduce_loop
         .globl sdot_stride_loop
+        .globl ddot_pre
+        .globl ddot_loop
+        .globl ddot_post
+        .globl ddot_reduce_loop
+        .globl ddot_stride_loop
 blas1:
 scopy_unit:
         vlw vv0, va0
@@ -239,6 +244,27 @@ sdot_stride_loop:
         vlstw vv0, va0, va3
         vlstw vv1, va1, va4
         vfmadd.s vv2, vv0, vv1, vv2
+        vstop
+ddot_pre:
+        vfsub.d vv2, vv2, vv2
+        vstop
+ddot_loop:
+        vld vv0, va0
+        vld vv1, va1
+        vfmadd.d vv2, vv0, vv1, vv2
+        vstop
+ddot_post:
+        vsd vv2, va2
+        vstop 
+ddot_reduce_loop:
+        vld vv1, va1
+        vfadd.d vv2, vv2, vv1
+        vsd vv2, va2
+        vstop
+ddot_stride_loop:
+        vlstd vv0, va0, va3
+        vlstd vv1, va1, va4
+        vfmadd.d vv2, vv0, vv1, vv2
         vstop
 
 

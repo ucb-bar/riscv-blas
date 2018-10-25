@@ -11,6 +11,7 @@
 */
 
 #include "f2c.h"
+#include "custom-utils.h"
 
 /* > \brief \b DDOT */
 
@@ -135,49 +136,101 @@ doublereal ddot_(integer *n, doublereal *dx, integer *incx, doublereal *dy,
     if (*incx == 1 && *incy == 1) {
 
 /*        code for both increments equal to 1 */
+        hwacha_init();
+        setvcfg(3, 0, 0, 1);
+        int vl = 0;
+        double* cy = dy+1;
+        double* cx = dx+1;
+        void* pre = PRELOAD("blas1");
+        vl = setvlen(*n);
+        VF("ddot_pre");
+        i__ = 0;
+        i__1 = *n;
+        //multiply accumulate
+        while (i__1 - i__ > 0) {
+            vl = setvlen(i__1 - i__);
+            asm volatile ("vmca va0, %0" : : "r" (cx));
+            asm volatile ("vmca va1, %0" : : "r" (cy));
+            VF("ddot_loop");
+            cx += vl;
+            cy += vl;
+            i__ += vl;
+        }
 
+        //reduce 
+        vl = setvlen(*n);
+        int vl_pad = vl + vl % 2;
+        double* ta = (double*)malloc(vl_pad * sizeof(double));
+        ta[vl_pad - 1] = 0.f;
+        asm volatile ("vmca va2, %0" : : "r" (ta));
+        VF("ddot_post");
 
-/*        clean-up loop */
+        double *ta2;
+        i__1 = vl_pad >> 1;
+        while (i__1 > 0) {
+            vl = setvlen(i__1);
+            ta2 = ta + vl;
+            asm volatile ("vmca va1, %0" : : "r" (ta2));
+            VF("ddot_reduce_loop");
+            i__1 = vl >> 1;
+        }
 
-	m = *n % 5;
-	if (m != 0) {
-	    i__1 = m;
-	    for (i__ = 1; i__ <= i__1; ++i__) {
-		dtemp += dx[i__] * dy[i__];
-	    }
-	    if (*n < 5) {
-		ret_val = dtemp;
-		return ret_val;
-	    }
-	}
-	mp1 = m + 1;
-	i__1 = *n;
-	for (i__ = mp1; i__ <= i__1; i__ += 5) {
-	    dtemp = dtemp + dx[i__] * dy[i__] + dx[i__ + 1] * dy[i__ + 1] + 
-		    dx[i__ + 2] * dy[i__ + 2] + dx[i__ + 3] * dy[i__ + 3] + 
-		    dx[i__ + 4] * dy[i__ + 4];
-	}
+        ret_val = *ta;
+        free(ta);
     } else {
 
 /*        code for unequal increments or equal increments */
 /*          not equal to 1 */
-
-	ix = 1;
-	iy = 1;
+        hwacha_init();
+        setvcfg(3, 0, 0, 1);
+        int vl = 0;
+        double* cy = dy+1;
+        double* cx = dx+1;
 	if (*incx < 0) {
-	    ix = (-(*n) + 1) * *incx + 1;
+	    cx = dx + (-(*n) + 1) * *incx + 1;
 	}
 	if (*incy < 0) {
-	    iy = (-(*n) + 1) * *incy + 1;
+	    cy = dy + (-(*n) + 1) * *incy + 1;
 	}
-	i__1 = *n;
-	for (i__ = 1; i__ <= i__1; ++i__) {
-	    dtemp += dx[ix] * dy[iy];
-	    ix += *incx;
-	    iy += *incy;
-	}
+        void* pre = PRELOAD("blas1");
+        vl = setvlen(*n);
+        VF("ddot_pre");
+        asm volatile ("vmca va3, %0" : : "r" (*incx << 3));
+        asm volatile ("vmca va4, %0" : : "r" (*incy << 3));
+        i__ = 0;
+        i__1 = *n;
+        //multiply accumulate
+        while (i__1 - i__ > 0) {
+            vl = setvlen(i__1 - i__);
+            asm volatile ("vmca va0, %0" : : "r" (cx));
+            asm volatile ("vmca va1, %0" : : "r" (cy));
+            VF("ddot_stride_loop");
+            cx +=  vl;
+            cy +=  vl;
+            i__ += vl;
+        }
+
+        //reduce 
+        vl = setvlen(*n);
+        int vl_pad = vl + vl % 2;
+        double* ta = (double*)malloc(vl_pad * sizeof(double));
+        ta[vl_pad - 1] = 0.f;
+        asm volatile ("vmca va2, %0" : : "r" (ta));
+        VF("ddot_post");
+
+        double *ta2;
+        i__1 = vl_pad >> 1;
+        while (i__1 > 0) {
+            vl = setvlen(i__1);
+            ta2 = ta + vl;
+            asm volatile ("vmca va1, %0" : : "r" (ta2));
+            VF("ddot_reduce_loop");
+            i__1 = vl >> 1;
+        }
+
+        ret_val = *ta;
+        free(ta);
     }
-    ret_val = dtemp;
     return ret_val;
 } /* ddot_ */
 
