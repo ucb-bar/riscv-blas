@@ -11,6 +11,7 @@
 */
 
 #include "f2c.h"
+#include "custom-utils.h"
 
 /* > \brief \b SDOT */
 
@@ -135,48 +136,105 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
 
 /*        code for both increments equal to 1 */
 
+        hwacha_init();
+        setvcfg(0, 3, 0, 1);
+        int vl = 0;
+        float* cy = sy;
+        float* cx = sx;
+        int cn = *n;
+        void* pre = PRELOAD("blas1");
+        vl = setvlen(cn);
+        VF("sdot_pre");
+        //multiply accumulate
+        while (vl > 0) {
+            asm volatile ("vmca va0, %0" : : "r" (cx));
+            asm volatile ("vmca va1, %0" : : "r" (cy));
+            VF("sdot_loop");
+            cx += vl;
+            cy += vl;
+            cn -= vl;
+            vl = setvlen(cn);
+        }
 
-/*        clean-up loop */
+        //reduce 
+        vl = setvlen(cn);
+        int vl_pad = vl + vl % 2;
+        float* ta = malloc(vl_pad * sizeof(float));
+        ta[vl_pad - 1] = 0.f;
+        asm volatile ("vmca va2, %0" : : "r" (ta));
+        VF("sdot_post");
 
-	m = *n % 5;
-	if (m != 0) {
-	    i__1 = m;
-	    for (i__ = 1; i__ <= i__1; ++i__) {
-		stemp += sx[i__] * sy[i__];
-	    }
-	    if (*n < 5) {
-		ret_val = stemp;
-		return ret_val;
-	    }
-	}
-	mp1 = m + 1;
-	i__1 = *n;
-	for (i__ = mp1; i__ <= i__1; i__ += 5) {
-	    stemp = stemp + sx[i__] * sy[i__] + sx[i__ + 1] * sy[i__ + 1] + 
-		    sx[i__ + 2] * sy[i__ + 2] + sx[i__ + 3] * sy[i__ + 3] + 
-		    sx[i__ + 4] * sy[i__ + 4];
-	}
+        float *ta2;
+        vl = setvlen(vl_pad >> 1);
+        while (vl > 0) {
+            ta2 = ta + vl;
+            asm volatile ("vmca va1, %0" : : "r" (ta2));
+            VF("sdot_reduce_loop");
+            vl_pad -= vl;
+            vl = setvlen(vl_pad);
+        }
+
+        ret_val = *ta;
+        free(ta);
     } else {
 
 /*        code for unequal increments or equal increments */
 /*          not equal to 1 */
 
-	ix = 1;
-	iy = 1;
+        hwacha_init();
+        setvcfg(0, 3, 0, 1);
+        int vl = 0;
+        float* cy = sy;
+        float* cx = sx;
+        int incx_sign = 1;
+        int incy_sign = 1;
 	if (*incx < 0) {
-	    ix = (-(*n) + 1) * *incx + 1;
+	    cx = sx + (-(*n) + 1) * *incx + 1;
+            incx_sign = -1;
 	}
 	if (*incy < 0) {
-	    iy = (-(*n) + 1) * *incy + 1;
+	    cy = sy + (-(*n) + 1) * *incy + 1;
+            incy_sign = -1;
 	}
-	i__1 = *n;
-	for (i__ = 1; i__ <= i__1; ++i__) {
-	    stemp += sx[ix] * sy[iy];
-	    ix += *incx;
-	    iy += *incy;
-	}
+        int cn = *n;
+        void* pre = PRELOAD("blas1");
+        vl = setvlen(cn);
+        VF("sdot_pre");
+        asm volatile ("vmca va3, %0" : : "r" (*incx));
+        asm volatile ("vmca va4, %0" : : "r" (*incy));
+        //multiply accumulate
+        while (vl > 0) {
+            asm volatile ("vmca va0, %0" : : "r" (cx));
+            asm volatile ("vmca va1, %0" : : "r" (cy));
+            VF("sdot_stride_loop");
+            cx += incx_sign * vl;
+            cy += incy_sign * vl;
+            cn -= vl;
+            vl = setvlen(cn);
+        }
+
+        //reduce 
+        vl = setvlen(cn);
+        int vl_pad = vl + vl % 2;
+        float* ta = malloc(vl_pad * sizeof(float));
+        ta[vl_pad - 1] = 0.f;
+        asm volatile ("vmca va2, %0" : : "r" (ta));
+        VF("sdot_post");
+
+        float *ta2;
+        vl = setvlen(vl_pad >> 1);
+        while (vl > 0) {
+            ta2 = ta + vl;
+            asm volatile ("vmca va1, %0" : : "r" (ta2));
+            VF("sdot_reduce_loop");
+            vl_pad -= vl;
+            vl = setvlen(vl_pad);
+        }
+
+        ret_val = *ta;
+        free(ta);
+        return ret_val;
     }
-    ret_val = stemp;
     return ret_val;
 } /* sdot_ */
 

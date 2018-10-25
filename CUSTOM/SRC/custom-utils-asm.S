@@ -153,7 +153,11 @@ dgemm_postedge:
         .globl saxpy_stride_loop
         .globl daxpy_loop
         .globl daxpy_stride_loop
-
+        .globl sdot_pre
+        .globl sdot_loop
+        .globl sdot_post
+        .globl sdot_reduce_loop
+        .globl sdot_stride_loop
 blas1:
 scopy_unit:
         vlw vv0, va0
@@ -214,4 +218,57 @@ daxpy_stride_loop:
         vlstd vv1, va1, va3
         vfmadd.d vv1, vs1, vv0, vv1
         vsstd vv1, va1, va3
+        vstop
+sdot_pre:
+        vsub vv2, vv2, vv2
+        vstop
+sdot_loop:
+        vlw vv0, va0
+        vlw vv1, va1
+        vfmadd.s vv2, vv2, vv0, vv1
+        vstop
+sdot_post:
+        vsw vv2, va2
+        vstop 
+sdot_reduce_loop:
+        vlw vv1, va1
+        vadd vv2, vv2, vv1
+        vsw vv2, va2
+        vstop
+sdot_stride_loop:
+        vlstw vv0, va0, va3
+        vlstw vv1, va1, va4
+        vfmadd.s vv2, vv2, vv0, vv1
+        vstop
+
+
+
+
+
+        .align 12
+        .globl blas2
+        .globl sgemv_zero_loop
+        .globl sgemv_beta_loop
+        .globl sgemv_stride_zero_loop
+        .globl sgemv_stride_beta_loop
+blas2:
+sgemv_zero_loop:
+        vlw vv0, va0
+        vfsub.s vv0, vv0, vv0
+        vsw vv0, va0
+        vstop
+sgemv_beta_loop:
+        vlw vv0, va0
+        vfmul.s vv0, vv0, vs1
+        vsw vv0, va0
+        vstop
+sgemv_stride_zero_loop:
+        vlstw vv0, va0, va1
+        vfsub.s vv0, vv0, vv0
+        vsstw vv0, va0, va1
+        vstop
+sgemv_stride_beta_loop:
+        vlstw vv0, va0, va1
+        vfmul.s vv0, vv0, vs1
+        vsstw vv0, va0, va1
         vstop
