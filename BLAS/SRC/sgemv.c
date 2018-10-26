@@ -340,36 +340,42 @@
 	float* cy = y + ky;
         float* cx = x + kx;
         float* ca = a;
-
-        asm volatile ("vmcs vs1, %0" : : "r" (a_dim1));
-
-	jx = kx;
+        jx = kx;
 	if (*incy == 1) {
 	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		temp = *alpha * x[jx];
-		i__2 = *m;
-		for (i__ = 1; i__ <= i__2; ++i__) {
-		    y[i__] += temp * a[i__ + j * a_dim1];
-/* L50: */
-		}
-		jx += *incx;
-/* L60: */
-	    }
+            i__2 = *m;
+            while (i__2 - i__ > 0) {
+              vl = setvlen(i__2 - i__);
+              jx = kx;
+              VF("sgemv_start");
+              for (j = 1; j <= i__1; j++) {
+                asm volatile ("vmca va0, %0" : : "r" (a + i__ + 1 + j * a_dim1));
+                asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
+                VF("sgemv_loop");
+                jx += *incx;
+              }
+              asm volatile ("vmca va0, %0" : : "r" (cy + i__));
+              VF("sgemv_stop");
+              i__ += vl;
+            }
 	} else {
 	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		temp = *alpha * x[jx];
-		iy = ky;
-		i__2 = *m;
-		for (i__ = 1; i__ <= i__2; ++i__) {
-		    y[iy] += temp * a[i__ + j * a_dim1];
-		    iy += *incy;
-/* L70: */
-		}
-		jx += *incx;
-/* L80: */
-	    }
+            i__2 = *m;
+            asm volatile ("vmca va1, %0" : : "r" (*incy << 2));
+            while (i__2 - i__ > 0) {
+              vl = setvlen(i__2 - i__);
+              jx = kx;
+              VF("sgemv_start");
+              for (j = 1; j <= i__1; j++) {
+                asm volatile ("vmca va0, %0" : : "r" (a + i__ + 1 + j * a_dim1));
+                asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
+                VF("sgemv_loop");
+                jx += *incx;
+              }
+              asm volatile ("vmca va0, %0" : : "r" (cy + i__ * (*incy)));
+              VF("sgemv_stride_stop");
+              i__ += vl;
+            }
 	}
     } else {
 

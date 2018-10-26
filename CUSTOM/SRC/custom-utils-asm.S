@@ -334,6 +334,11 @@ dasum_stride_loop:
         .globl sgemv_beta_loop
         .globl sgemv_stride_zero_loop
         .globl sgemv_stride_beta_loop
+        .globl sgemv_unit_loop
+        .globl sgemv_start
+        .globl sgemv_loop
+        .globl sgemv_stop
+        .globl sgemv_stride_stop
 blas2:
 sgemv_zero_loop:
         vlw vv0, va0
@@ -353,5 +358,22 @@ sgemv_stride_zero_loop:
 sgemv_stride_beta_loop:
         vlstw vv0, va0, va1
         vfmul.s vv0, vv0, vs1
+        vsstw vv0, va0, va1
+        vstop
+sgemv_start:
+        vfsub.s vv0, vv0, vv0
+        vstop
+sgemv_loop:
+        vlw vv1, va0
+        vfmadd.s vv0, vs1, vv1, vv0
+        vstop
+sgemv_stop:
+        vlw vv1, va0
+        vfadd.s vv0, vv0, vv1
+        vsw vv0, va0
+        vstop
+sgemv_stride_stop:
+        vlstw vv1, va0, va1
+        vfadd.s vv0, vv0, vv1
         vsstw vv0, va0, va1
         vstop
