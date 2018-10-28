@@ -335,15 +335,12 @@
         setvcfg(0, 3, 0, 1);
         int vl = 0;
         void* pre = PRELOAD("blas2");
-        i__ = 0;
-        i__1 = *n;
 	float* cy = y + ky;
         float* cx = x + kx;
-        float* ca = a;
-        jx = kx;
+        i__ = 0;
+	i__1 = *n;
+        i__2 = *m;
 	if (*incy == 1) {
-	    i__1 = *n;
-            i__2 = *m;
             while (i__2 - i__ > 0) {
               vl = setvlen(i__2 - i__);
               jx = kx;
@@ -359,8 +356,6 @@
               i__ += vl;
             }
 	} else {
-	    i__1 = *n;
-            i__2 = *m;
             asm volatile ("vmca va1, %0" : : "r" (*incy << 2));
             while (i__2 - i__ > 0) {
               vl = setvlen(i__2 - i__);
@@ -380,36 +375,50 @@
     } else {
 
 /*        Form  y := alpha*A**T*x + y. */
-
-	jy = ky;
+        hwacha_init();
+        setvcfg(0, 3, 0, 1);
+        int vl = 0;
+        void* pre = PRELOAD("blas2");
+	float* cy = y + ky;
+        float* cx = x + kx;
+        i__ = 0;
+	i__1 = *m;
+        i__2 = *n;
 	if (*incx == 1) {
-	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		temp = 0.f;
-		i__2 = *m;
-		for (i__ = 1; i__ <= i__2; ++i__) {
-		    temp += a[i__ + j * a_dim1] * x[i__];
-/* L90: */
-		}
-		y[jy] += *alpha * temp;
-		jy += *incy;
-/* L100: */
-	    }
+            while (i__2 - i__ > 0) {
+              vl = setvlen(i__2 - i__);
+              jx = kx;
+              VF("sgemv_start");
+              asm volatile ("vmca va1, %0" : : "r" (*incy << 2));
+              asm volatile ("vmca va2, %0" : : "r" (a_dim1 << 2));
+              for (j = 1; j <= i__1; j++) {
+                asm volatile ("vmca va0, %0" : : "r" (a + j + (i__+1) * a_dim1));
+                asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
+                VF("sgemv_tranpose_loop");
+                jx += 1;
+              }
+              asm volatile ("vmca va0, %0" : : "r" (cy + i__ * (*incy)));
+              VF("sgemv_stride_stop");
+              i__ += vl;
+            }
+
 	} else {
-	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		temp = 0.f;
-		ix = kx;
-		i__2 = *m;
-		for (i__ = 1; i__ <= i__2; ++i__) {
-		    temp += a[i__ + j * a_dim1] * x[ix];
-		    ix += *incx;
-/* L110: */
-		}
-		y[jy] += *alpha * temp;
-		jy += *incy;
-/* L120: */
-	    }
+            while (i__2 - i__ > 0) {
+              vl = setvlen(i__2 - i__);
+              jx = kx;
+              VF("sgemv_start");
+              asm volatile ("vmca va1, %0" : : "r" (*incy << 2));
+              asm volatile ("vmca va2, %0" : : "r" (a_dim1 << 2));
+              for (j = 1; j <= i__1; j++) {
+                asm volatile ("vmca va0, %0" : : "r" (a + j + (i__+1) * a_dim1));
+                asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
+                VF("sgemv_tranpose_loop");
+                jx += *incx;
+              }
+              asm volatile ("vmca va0, %0" : : "r" (cy + i__ * (*incy)));
+              VF("sgemv_stride_stop");
+              i__ += vl;
+            }
 	}
     }
 

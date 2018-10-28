@@ -339,6 +339,7 @@ dasum_stride_loop:
         .globl sgemv_loop
         .globl sgemv_stop
         .globl sgemv_stride_stop
+        .globl sgemv_tranpose_loop
 blas2:
 sgemv_zero_loop:
         vlw vv0, va0
@@ -376,4 +377,8 @@ sgemv_stride_stop:
         vlstw vv1, va0, va1
         vfadd.s vv0, vv0, vv1
         vsstw vv0, va0, va1
+        vstop
+sgemv_tranpose_loop:
+        vlstw vv1, va0, va2
+        vfmadd.s vv0, vs1, vv1, vv0
         vstop
