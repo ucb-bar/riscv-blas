@@ -340,6 +340,16 @@ dasum_stride_loop:
         .globl sgemv_stop
         .globl sgemv_stride_stop
         .globl sgemv_tranpose_loop
+        .globl dgemv_zero_loop
+        .globl dgemv_beta_loop
+        .globl dgemv_stride_zero_loop
+        .globl dgemv_stride_beta_loop
+        .globl dgemv_unit_loop
+        .globl dgemv_start
+        .globl dgemv_loop
+        .globl dgemv_stop
+        .globl dgemv_stride_stop
+        .globl dgemv_tranpose_loop
 blas2:
 sgemv_zero_loop:
         vlw vv0, va0
@@ -381,4 +391,45 @@ sgemv_stride_stop:
 sgemv_tranpose_loop:
         vlstw vv1, va0, va2
         vfmadd.s vv0, vs1, vv1, vv0
+        vstop
+dgemv_zero_loop:
+        vld vv0, va0
+        vfsub.d vv0, vv0, vv0
+        vsd vv0, va0
+        vstop
+dgemv_beta_loop:
+        vld vv0, va0
+        vfmul.d vv0, vv0, vs1
+        vsd vv0, va0
+        vstop
+dgemv_stride_zero_loop:
+        vlstd vv0, va0, va1
+        vfsub.d vv0, vv0, vv0
+        vsstd vv0, va0, va1
+        vstop
+dgemv_stride_beta_loop:
+        vlstd vv0, va0, va1
+        vfmul.d vv0, vv0, vs1
+        vsstd vv0, va0, va1
+        vstop
+dgemv_start:
+        vfsub.d vv0, vv0, vv0
+        vstop
+dgemv_loop:
+        vld vv1, va0
+        vfmadd.d vv0, vs1, vv1, vv0
+        vstop
+dgemv_stop:
+        vld vv1, va0
+        vfadd.d vv0, vv0, vv1
+        vsd vv0, va0
+        vstop
+dgemv_stride_stop:
+        vlstd vv1, va0, va1
+        vfadd.d vv0, vv0, vv1
+        vsstd vv0, va0, va1
+        vstop
+dgemv_tranpose_loop:
+        vlstd vv1, va0, va2
+        vfmadd.d vv0, vs1, vv1, vv0
         vstop

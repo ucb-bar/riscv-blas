@@ -11,6 +11,7 @@
 */
 
 #include "f2c.h"
+#include "custom-utils.h"
 
 /* > \brief \b DGEMV */
 
@@ -270,36 +271,54 @@
 /*     First form  y := beta*y. */
 
     if (*beta != 1.) {
+
+        hwacha_init();
+        setvcfg(1, 0, 0, 1);
+        int vl = 0;
+	double* cy = y + ky;
+        void* pre = PRELOAD("blas2");
+        i__ = 0;
+        i__1 = leny;
 	if (*incy == 1) {
 	    if (*beta == 0.) {
-		i__1 = leny;
-		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[i__] = 0.;
-/* L10: */
-		}
+                while (i__1 - i__ > 0) {
+                  vl = setvlen(i__1 - i__);
+                  asm volatile ("vmca va0, %0" : : "r" (cy));
+                  VF("dgemv_zero_loop");
+                  cy += vl;
+                  i__ += vl;
+                }
 	    } else {
-		i__1 = leny;
-		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[i__] = *beta * y[i__];
-/* L20: */
-		}
+                asm volatile ("vmcs vs1, %0" : : "r" (*beta));
+                while (i__1 - i__ > 0) {
+                  vl = setvlen(i__1 - i__);
+                  asm volatile ("vmca va0, %0" : : "r" (cy));
+                  VF("dgemv_beta_loop");
+                  cy += vl;
+                  i__ += vl;
+                }
 	    }
 	} else {
 	    iy = ky;
 	    if (*beta == 0.) {
-		i__1 = leny;
-		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[iy] = 0.;
-		    iy += *incy;
-/* L30: */
-		}
+                asm volatile ("vmca va1, %0" : : "r" (*incy << 3));
+                while (i__1 - i__ > 0) {
+                  vl = setvlen(i__1 - i__);
+                  asm volatile ("vmca va0, %0" : : "r" (cy));
+                  VF("dgemv_stride_zero_loop");
+                  cy += (*incy * vl);
+                  i__ += vl;
+                }
 	    } else {
-		i__1 = leny;
-		for (i__ = 1; i__ <= i__1; ++i__) {
-		    y[iy] = *beta * y[iy];
-		    iy += *incy;
-/* L40: */
-		}
+                asm volatile ("vmcs vs1, %0" : : "r" (*beta));
+                asm volatile ("vmca va1, %0" : : "r" (*incy << 3));
+                while (i__1 - i__  > 0) {
+                  vl = setvlen(i__1 - i__);
+                  asm volatile ("vmca va0, %0" : : "r" (cy));
+                  VF("dgemv_stride_beta_loop");
+                  cy += (*incy * vl);
+                  i__ += vl;
+                }
 	    }
 	}
     }
@@ -310,67 +329,94 @@
 
 /*        Form  y := alpha*A*x + y. */
 
-	jx = kx;
+        hwacha_init();
+        setvcfg(3, 0, 0, 1);
+        int vl = 0;
+        void* pre = PRELOAD("blas2");
+	double* cy = y + ky;
+        double* cx = x + kx;
+        i__ = 0;
+	i__1 = *n;
+        i__2 = *m;
 	if (*incy == 1) {
-	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		temp = *alpha * x[jx];
-		i__2 = *m;
-		for (i__ = 1; i__ <= i__2; ++i__) {
-		    y[i__] += temp * a[i__ + j * a_dim1];
-/* L50: */
-		}
-		jx += *incx;
-/* L60: */
-	    }
+            while (i__2 - i__ > 0) {
+              vl = setvlen(i__2 - i__);
+              jx = kx;
+              VF("dgemv_start");
+              for (j = 1; j <= i__1; j++) {
+                asm volatile ("vmca va0, %0" : : "r" (a + i__ + 1 + j * a_dim1));
+                asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
+                VF("dgemv_loop");
+                jx += *incx;
+              }
+              asm volatile ("vmca va0, %0" : : "r" (cy + i__));
+              VF("dgemv_stop");
+              i__ += vl;
+            }
 	} else {
-	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		temp = *alpha * x[jx];
-		iy = ky;
-		i__2 = *m;
-		for (i__ = 1; i__ <= i__2; ++i__) {
-		    y[iy] += temp * a[i__ + j * a_dim1];
-		    iy += *incy;
-/* L70: */
-		}
-		jx += *incx;
-/* L80: */
-	    }
+            asm volatile ("vmca va1, %0" : : "r" (*incy << 3));
+            while (i__2 - i__ > 0) {
+              vl = setvlen(i__2 - i__);
+              jx = kx;
+              VF("dgemv_start");
+              for (j = 1; j <= i__1; j++) {
+                asm volatile ("vmca va0, %0" : : "r" (a + i__ + 1 + j * a_dim1));
+                asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
+                VF("dgemv_loop");
+                jx += *incx;
+              }
+              asm volatile ("vmca va0, %0" : : "r" (cy + i__ * (*incy)));
+              VF("dgemv_stride_stop");
+              i__ += vl;
+            }
 	}
     } else {
 
 /*        Form  y := alpha*A**T*x + y. */
 
-	jy = ky;
+        hwacha_init();
+        setvcfg(3, 0, 0, 1);
+        int vl = 0;
+        void* pre = PRELOAD("blas2");
+	double* cy = y + ky;
+        double* cx = x + kx;
+        i__ = 0;
+	i__1 = *m;
+        i__2 = *n;
 	if (*incx == 1) {
-	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		temp = 0.;
-		i__2 = *m;
-		for (i__ = 1; i__ <= i__2; ++i__) {
-		    temp += a[i__ + j * a_dim1] * x[i__];
-/* L90: */
-		}
-		y[jy] += *alpha * temp;
-		jy += *incy;
-/* L100: */
-	    }
+            while (i__2 - i__ > 0) {
+              vl = setvlen(i__2 - i__);
+              jx = kx;
+              VF("dgemv_start");
+              asm volatile ("vmca va1, %0" : : "r" (*incy << 3));
+              asm volatile ("vmca va2, %0" : : "r" (a_dim1 << 3));
+              for (j = 1; j <= i__1; j++) {
+                asm volatile ("vmca va0, %0" : : "r" (a + j + (i__+1) * a_dim1));
+                asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
+                VF("dgemv_tranpose_loop");
+                jx += 1;
+              }
+              asm volatile ("vmca va0, %0" : : "r" (cy + i__ * (*incy)));
+              VF("dgemv_stride_stop");
+              i__ += vl;
+            }
 	} else {
-	    i__1 = *n;
-	    for (j = 1; j <= i__1; ++j) {
-		temp = 0.;
-		ix = kx;
-		i__2 = *m;
-		for (i__ = 1; i__ <= i__2; ++i__) {
-		    temp += a[i__ + j * a_dim1] * x[ix];
-		    ix += *incx;
-/* L110: */
-		}
-		y[jy] += *alpha * temp;
-		jy += *incy;
-/* L120: */
-	    }
+            while (i__2 - i__ > 0) {
+              vl = setvlen(i__2 - i__);
+              jx = kx;
+              VF("dgemv_start");
+              asm volatile ("vmca va1, %0" : : "r" (*incy << 3));
+              asm volatile ("vmca va2, %0" : : "r" (a_dim1 << 3));
+              for (j = 1; j <= i__1; j++) {
+                asm volatile ("vmca va0, %0" : : "r" (a + j + (i__+1) * a_dim1));
+                asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
+                VF("dgemv_tranpose_loop");
+                jx += *incx;
+              }
+              asm volatile ("vmca va0, %0" : : "r" (cy + i__ * (*incy)));
+              VF("dgemv_stride_stop");
+              i__ += vl;
+            }
 	}
     }
 

@@ -291,8 +291,6 @@
 
 	    } else {
                 asm volatile ("vmcs vs1, %0" : : "r" (*beta));
-                i__ = 0;
-                i__1 = leny;
                 while (i__1 - i__ > 0) {
                   vl = setvlen(i__1 - i__);
                   asm volatile ("vmca va0, %0" : : "r" (cy));
