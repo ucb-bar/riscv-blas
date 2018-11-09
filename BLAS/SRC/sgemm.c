@@ -392,6 +392,7 @@
           }
           i__ += vl;
         }
+        asm volatile("fence");
         return 0;
       } else {
         /*           Form  C := alpha*A**T*B + beta*C */
@@ -404,6 +405,7 @@
         sgemm_("N", "N", m, n, k, alpha, ta, m, b + b_offset, ldb, beta, c__ + c_offset,
                ldc, 1, 1);
         free(ta);
+        asm volatile("fence");
         return 0;
       }
     } else {
@@ -470,6 +472,7 @@
           }
           i__ += vl;
         }
+        asm volatile("fence");
         return 0;
       } else {
         /*           Form  C := alpha*A**T*B**T + beta*C */
@@ -482,10 +485,11 @@
             }
         sgemm_("N", "T", m, n, k, alpha, ta, m, b + b_offset, ldb, beta, c__ + c_offset, ldc, 1, 1);
         free(ta);
+        asm volatile("fence");
         return 0;
       }
     }
-
+    asm volatile("fence");
     return 0;
 
 /*     End of SGEMM . */

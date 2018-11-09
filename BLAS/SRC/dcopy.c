@@ -178,6 +178,7 @@
           i__ += vl;
         }
     }
+    asm volatile("fence");
     return 0;
 } /* dcopy_ */
 

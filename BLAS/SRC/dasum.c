@@ -157,7 +157,7 @@ doublereal dasum_(integer *n, doublereal *dx, integer *incx)
             VF("dasum_reduce_loop");
             i__1 = vl >> 1;
         }
-
+        asm volatile("fence");
         ret_val = *ta;
         free(ta);
     } else {
@@ -201,7 +201,7 @@ doublereal dasum_(integer *n, doublereal *dx, integer *incx)
             VF("dasum_reduce_loop");
             i__1 = vl >> 1;
         }
-
+        asm volatile("fence");
         ret_val = *ta;
         free(ta);
     }

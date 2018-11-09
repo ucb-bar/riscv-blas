@@ -172,7 +172,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
             VF("sdot_reduce_loop");
             i__1 = vl >> 1;
         }
-
+        asm volatile("fence");
         ret_val = *ta;
         free(ta);
     } else {
@@ -226,7 +226,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
             VF("sdot_reduce_loop");
             i__1 = vl >> 1;
         }
-
+        asm volatile("fence");
         ret_val = *ta;
         free(ta);
     }

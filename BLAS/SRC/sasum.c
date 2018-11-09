@@ -157,7 +157,7 @@ real sasum_(integer *n, real *sx, integer *incx)
             VF("sasum_reduce_loop");
             i__1 = vl >> 1;
         }
-
+        asm volatile("fence");
         ret_val = *ta;
         free(ta);
     } else {
@@ -201,7 +201,7 @@ real sasum_(integer *n, real *sx, integer *incx)
             VF("sasum_reduce_loop");
             i__1 = vl >> 1;
         }
-
+        asm volatile("fence");
         ret_val = *ta;
         free(ta);
     }

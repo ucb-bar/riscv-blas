@@ -174,7 +174,7 @@ doublereal ddot_(integer *n, doublereal *dx, integer *incx, doublereal *dy,
             VF("ddot_reduce_loop");
             i__1 = vl >> 1;
         }
-
+        asm volatile("fence");
         ret_val = *ta;
         free(ta);
     } else {
@@ -227,7 +227,7 @@ doublereal ddot_(integer *n, doublereal *dx, integer *incx, doublereal *dy,
             VF("ddot_reduce_loop");
             i__1 = vl >> 1;
         }
-
+        asm volatile("fence");
         ret_val = *ta;
         free(ta);
     }

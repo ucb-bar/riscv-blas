@@ -160,6 +160,7 @@
         i__ += vl;
       }
     }
+    asm volatile("fence");
     return 0;
 } /* dscal_ */
 

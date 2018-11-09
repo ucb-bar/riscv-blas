@@ -179,6 +179,7 @@
           i__ += vl;
         }
     }
+    asm volatile("fence");
     return 0;
 } /* scopy_ */
 

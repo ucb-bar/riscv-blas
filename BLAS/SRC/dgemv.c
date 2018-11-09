@@ -322,7 +322,9 @@
 	    }
 	}
     }
+    
     if (*alpha == 0.) {
+      asm volatile("fence");
 	return 0;
     }
     if (lsame_(trans, "N", (ftnlen)1, (ftnlen)1)) {
@@ -419,7 +421,7 @@
             }
 	}
     }
-
+    asm volatile("fence");
     return 0;
 
 /*     End of DGEMV . */
