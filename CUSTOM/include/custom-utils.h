@@ -27,8 +27,10 @@ int setvlen(int vlen);
 
 #define VF(label) {                             \
     void* dest;                                   \
+    asm volatile ("fence");                       \
     asm volatile ("la %0, " label : "=r" (dest)); \
     asm volatile ("vf 0(%0)" : : "r" (dest));     \
+    asm volatile ("fence");                       \
   }
 /* void memcpy_16(int16_t* src, int16_t* dest, int len); */
 /* void memcpy_32(float* src, float* dest, int len); */
