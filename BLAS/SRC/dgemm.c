@@ -342,6 +342,7 @@
           int vl = 0;
           double* ca;
           double* cb;
+          double* cc;
           i__ = 0;
           i__1 = *n;
           i__2 = *k;
@@ -358,7 +359,9 @@
               VF("dgemm_pre");
               ca = a + i__ + 1 + a_dim1;
               cb = b + 1 + j * b_dim1;
+              cc = c__ + 1 + i__ + j * c_dim1;
               for (l = 1; l <= i__2; ++l) {
+                MEMTOUCH(ca, double, vl);
                 asm volatile ("vmca va0, %0" : : "r" (ca));
                 asm volatile ("vmcs vs3, %0" : : "r" (cb[0]));
                 asm volatile ("vmcs vs4, %0" : : "r" (cb[b_dim1]));
@@ -369,10 +372,14 @@
                 cb += 1;
               }
               VF("dgemm_postalpha");
-              asm volatile ("vmca va0, %0" : : "r" (c__ + 1 + j * c_dim1));
-              asm volatile ("vmca va1, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1));
-              asm volatile ("vmca va2, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1*2));
-              asm volatile ("vmca va3, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1*3));
+              MEMTOUCH(cc+c_dim1*0, double, vl);
+              MEMTOUCH(cc+c_dim1*1, double, vl);
+              MEMTOUCH(cc+c_dim1*2, double, vl);
+              MEMTOUCH(cc+c_dim1*3, double, vl);
+              asm volatile ("vmca va0, %0" : : "r" (cc+c_dim1*0));
+              asm volatile ("vmca va1, %0" : : "r" (cc+c_dim1*1));
+              asm volatile ("vmca va2, %0" : : "r" (cc+c_dim1*2));
+              asm volatile ("vmca va3, %0" : : "r" (cc+c_dim1*3));
               if (*beta != 0.f) {
                 VF("dgemm_postbeta");
               }
@@ -382,7 +389,9 @@
               VF("dgemm_preedge");
               ca = a + i__ + 1 + a_dim1;
               cb = b + 1 + j * b_dim1;
+              cc = c__ + 1 + i__ + j * c_dim1;
               for (l = 1; l <= i__2; ++l) {
+                MEMTOUCH(ca, double, vl);
                 asm volatile ("vmca va0, %0" : : "r" (ca));
                 asm volatile ("vmcs vs3, %0" : : "r" (cb[0]));
                 VF("dgemm_loopedge");
@@ -390,7 +399,8 @@
                 cb += 1;
               }
               VF("dgemm_postalphaedge");
-              asm volatile ("vmca va0, %0" : : "r" (c__ + 1 + j * c_dim1));
+              MEMTOUCH(cc, double, vl);
+              asm volatile ("vmca va0, %0" : : "r" (cc));
               if (*beta != 0.f) {
                 VF("dgemm_postbetaedge");
               }
@@ -422,6 +432,7 @@
           int vl = 0;
           double* ca;
           double* cb;
+          double* cc;
           i__ = 0;
           i__1 = *n;
           i__2 = *k;
@@ -438,7 +449,9 @@
               VF("dgemm_pre");
               ca = a + i__ + 1 + a_dim1;
               cb = b + j + b_dim1;
+              cc = c__ + 1 + i__ + j * c_dim1;
               for (l = 1; l <= i__2; ++l) {
+                MEMTOUCH(ca, double, vl);
                 asm volatile ("vmca va0, %0" : : "r" (ca));
                 asm volatile ("vmcs vs3, %0" : : "r" (cb[0]));
                 asm volatile ("vmcs vs4, %0" : : "r" (cb[1]));
@@ -449,10 +462,14 @@
                 cb += b_dim1;
               }
               VF("dgemm_postalpha");
-              asm volatile ("vmca va0, %0" : : "r" (c__ + 1 + j * c_dim1));
-              asm volatile ("vmca va1, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1));
-              asm volatile ("vmca va2, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1*2));
-              asm volatile ("vmca va3, %0" : : "r" (c__ + 1 + j * c_dim1 + c_dim1*3));
+              MEMTOUCH(cc+c_dim1*0, double, vl);
+              MEMTOUCH(cc+c_dim1*1, double, vl);
+              MEMTOUCH(cc+c_dim1*2, double, vl);
+              MEMTOUCH(cc+c_dim1*3, double, vl);
+              asm volatile ("vmca va0, %0" : : "r" (cc+c_dim1*0));
+              asm volatile ("vmca va1, %0" : : "r" (cc+c_dim1*1));
+              asm volatile ("vmca va2, %0" : : "r" (cc+c_dim1*2));
+              asm volatile ("vmca va3, %0" : : "r" (cc+c_dim1*3));
               if (*beta != 0.f) {
                 VF("dgemm_postbeta");
               }
@@ -462,7 +479,9 @@
               VF("dgemm_preedge");
               ca = a + i__ + 1 + a_dim1;
               cb = b + j + b_dim1;
+              cc = c__ + i__ + 1 + j * c_dim1;
               for (l = 1; l <= i__2; ++l) {
+                MEMTOUCH(ca, double, vl);
                 asm volatile ("vmca va0, %0" : : "r" (ca));
                 asm volatile ("vmcs vs3, %0" : : "r" (cb[0]));
                 VF("dgemm_loopedge");
@@ -470,7 +489,8 @@
                 cb += b_dim1;
               }
               VF("dgemm_postalphaedge");
-              asm volatile ("vmca va0, %0" : : "r" (c__ + 1 + j * c_dim1));
+              MEMTOUCH(cc, double, vl);
+              asm volatile ("vmca va0, %0" : : "r" (cc));
               if (*beta != 0.f) {
                 VF("dgemm_postbetaedge");
               }

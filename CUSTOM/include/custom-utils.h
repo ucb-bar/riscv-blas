@@ -25,6 +25,17 @@ int setvlen(int vlen);
       out;                                                      \
     })
 
+#define MEMTOUCH(addr, type, bound) ({                           \
+  volatile type t;                                               \
+  t = (addr)[0];                                                 \
+  (addr)[0] = t;                                                 \
+  type* tf = (type*) (((((uintptr_t) (addr)) >> 12) + 1) << 12); \
+  for (; tf - (addr) < bound; tf += 1 << 10) {                   \
+  t = tf[0];                                                     \
+  tf[0] = t;                                                     \
+  }                                                              \
+    })
+
 #define VF(label) {                             \
     void* dest;                                   \
     asm volatile ("fence");                       \
