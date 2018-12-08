@@ -27,21 +27,21 @@ int setvlen(int vlen);
 
 #define MEMTOUCH(addr, type, bound) ({                           \
   volatile type t;                                               \
+  printf("touching %x -> %d\n", addr, bound);                    \
   t = (addr)[0];                                                 \
   (addr)[0] = t;                                                 \
   type* tf = (type*) (((((uintptr_t) (addr)) >> 12) + 1) << 12); \
-  for (; tf - (addr) < bound; tf += 1 << 10) {                   \
-  t = tf[0];                                                     \
-  tf[0] = t;                                                     \
+  for (; tf - (addr) < bound; tf += (1 << 12) / sizeof(type)) {  \
+    printf("touching %x\n", tf);                                 \
+    t = tf[0];                                                   \
+    tf[0] = t;                                                   \
   }                                                              \
     })
 
 #define VF(label) {                             \
     void* dest;                                   \
-    asm volatile ("fence");                       \
     asm volatile ("la %0, " label : "=r" (dest)); \
     asm volatile ("vf 0(%0)" : : "r" (dest));     \
-    asm volatile ("fence");                       \
   }
 /* void memcpy_16(int16_t* src, int16_t* dest, int len); */
 /* void memcpy_32(float* src, float* dest, int len); */
