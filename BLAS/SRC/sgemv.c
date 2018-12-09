@@ -283,7 +283,7 @@
 	    if (*beta == 0.f) {
                 while (i__1 - i__ > 0) {
                   vl = setvlen(i__1 - i__);
-                  MEMTOUCH(cy, float, vl);
+                  MEMTOUCH(cy, float, vl - 1);
                   asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_zero_loop");
                   cy += vl;
@@ -294,7 +294,7 @@
                 asm volatile ("vmcs vs1, %0" : : "r" (*beta));
                 while (i__1 - i__ > 0) {
                   vl = setvlen(i__1 - i__);
-                  MEMTOUCH(cy, float, vl);
+                  MEMTOUCH(cy, float, vl - 1);
                   asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_beta_loop");
                   cy += vl;
@@ -305,8 +305,8 @@
 	    if (*beta == 0.f) {
                 asm volatile ("vmca va1, %0" : : "r" (*incy << 2));
                 while (i__1 - i__ > 0) {
-                  vl = setvlen(i__1 - i__);
-                  MEMTOUCH(cy, float, vl * *incy);
+                  vl = setvlen(max(i__1 - i__,16));
+                  MEMTOUCH(cy, float, (vl-1) * *incy);
                   asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_stride_zero_loop");
                   cy += (*incy * vl);
@@ -316,8 +316,8 @@
                 asm volatile ("vmcs vs1, %0" : : "r" (*beta));
                 asm volatile ("vmca va1, %0" : : "r" (*incy << 2));
                 while (i__1 - i__  > 0) {
-                  vl = setvlen(i__1 - i__);
-                  MEMTOUCH(cy, float, vl * *incy);
+                  vl = setvlen(max(i__1 - i__,16));
+                  MEMTOUCH(cy, float, (vl-1) * *incy);
                   asm volatile ("vmca va0, %0" : : "r" (cy));
                   VF("sgemv_stride_beta_loop");
                   cy += (*incy * vl);
@@ -349,13 +349,13 @@
               jx = kx;
               VF("sgemv_start");
               for (j = 1; j <= i__1; j++) {
-                MEMTOUCH(a + i__ + 1 + j * a_dim1, float, vl);
+                MEMTOUCH(a + i__ + 1 + j * a_dim1, float, vl-1);
                 asm volatile ("vmca va0, %0" : : "r" (a + i__ + 1 + j * a_dim1));
                 asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
                 VF("sgemv_loop");
                 jx += *incx;
               }
-              MEMTOUCH(cy + i__, float, vl);
+              MEMTOUCH(cy + i__, float, vl-1);
               asm volatile ("vmca va0, %0" : : "r" (cy + i__));
               VF("sgemv_stop");
               i__ += vl;
@@ -363,17 +363,17 @@
 	} else {
             asm volatile ("vmca va1, %0" : : "r" (*incy << 2));
             while (i__2 - i__ > 0) {
-              vl = setvlen(i__2 - i__);
+              vl = setvlen(max(i__2 - i__,16));
               jx = kx;
               VF("sgemv_start");
               for (j = 1; j <= i__1; j++) {
-                MEMTOUCH(a + i__ + 1 + j * a_dim1, float, vl);
+                MEMTOUCH(a + i__ + 1 + j * a_dim1, float, vl-1);
                 asm volatile ("vmca va0, %0" : : "r" (a + i__ + 1 + j * a_dim1));
                 asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
                 VF("sgemv_loop");
                 jx += *incx;
               }
-              MEMTOUCH(cy + i__ * (*incy), float, vl * (*incy));
+              MEMTOUCH(cy + i__ * (*incy), float, (vl-1) * (*incy));
               asm volatile ("vmca va0, %0" : : "r" (cy + i__ * (*incy)));
               VF("sgemv_stride_stop");
               i__ += vl;
@@ -393,19 +393,19 @@
         i__2 = *n;
 	if (*incx == 1) {
             while (i__2 - i__ > 0) {
-              vl = setvlen(i__2 - i__);
+              vl = setvlen(max(i__2 - i__, 16));
               jx = kx;
               VF("sgemv_start");
               asm volatile ("vmca va1, %0" : : "r" (*incy << 2));
               asm volatile ("vmca va2, %0" : : "r" (a_dim1 << 2));
               for (j = 1; j <= i__1; j++) {
-                MEMTOUCH(a + j + (i__ + 1) * a_dim1, float, vl * a_dim1);
+                MEMTOUCH(a + j + (i__ + 1) * a_dim1, float, (vl-1) * a_dim1);
                 asm volatile ("vmca va0, %0" : : "r" (a + j + (i__+1) * a_dim1));
                 asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
                 VF("sgemv_tranpose_loop");
                 jx += 1;
               }
-              MEMTOUCH(cy + i__ * (*incy), float, vl * (*incy));
+              MEMTOUCH(cy + i__ * (*incy), float, (vl-1) * (*incy));
               asm volatile ("vmca va0, %0" : : "r" (cy + i__ * (*incy)));
               VF("sgemv_stride_stop");
               i__ += vl;
@@ -413,19 +413,19 @@
 
 	} else {
             while (i__2 - i__ > 0) {
-              vl = setvlen(i__2 - i__);
+              vl = setvlen(max(i__2 - i__,16));
               jx = kx;
               VF("sgemv_start");
               asm volatile ("vmca va1, %0" : : "r" (*incy << 2));
               asm volatile ("vmca va2, %0" : : "r" (a_dim1 << 2));
               for (j = 1; j <= i__1; j++) {
-                MEMTOUCH(a + j + (i__+1)*a_dim1, float, vl * (a_dim1));
+                MEMTOUCH(a + j + (i__+1)*a_dim1, float, (vl-1) * (a_dim1));
                 asm volatile ("vmca va0, %0" : : "r" (a + j + (i__+1) * a_dim1));
                 asm volatile ("vmcs vs1, %0" : : "r" (*alpha * x[jx]));
                 VF("sgemv_tranpose_loop");
                 jx += *incx;
               }
-              MEMTOUCH(cy + i__ * (*incy), float, vl * (*incy));
+              MEMTOUCH(cy + i__ * (*incy), float, (vl-1) * (*incy));
               asm volatile ("vmca va0, %0" : : "r" (cy + i__ * (*incy)));
               VF("sgemv_stride_stop");
               i__ += vl;

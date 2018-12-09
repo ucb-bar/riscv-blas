@@ -27,12 +27,10 @@ int setvlen(int vlen);
 
 #define MEMTOUCH(addr, type, bound) ({                           \
   volatile type t;                                               \
-  printf("touching %x -> %d\n", addr, bound);                    \
   t = (addr)[0];                                                 \
   (addr)[0] = t;                                                 \
   type* tf = (type*) (((((uintptr_t) (addr)) >> 12) + 1) << 12); \
   for (; tf - (addr) < bound; tf += (1 << 12) / sizeof(type)) {  \
-    printf("touching %x\n", tf);                                 \
     t = tf[0];                                                   \
     tf[0] = t;                                                   \
   }                                                              \
