@@ -12,7 +12,7 @@ SPIKEARGS=--extension=hwacha
 #  CC is the C compiler, normally invoked with options CFLAGS.
 #
 CC     = $(PREFIX)gcc -static
-CFLAGS = -O3 -I../../libf2c -I../../CUSTOM/include -Wa,-march=$(MARCH)
+CFLAGS = -O3 -I../../libf2c -I../../CUSTOM/include -Wa,-march=$(MARCH) -fopenmp
 
 #  Modify the FORTRAN and OPTS definitions to refer to the compiler
 #  and desired compiler options for your machine.  NOOPT refers to
@@ -30,7 +30,7 @@ NOOPT   = -O0 -frecursive
 #  Define LOADER and LOADOPTS to refer to the loader and desired
 #  load options for your machine.
 #
-LOADER   = $(PREFIX)gfortran -static
+LOADER   = $(PREFIX)gfortran -static -fopenmp
 LOADLIBS = -L../../libf2c -lf2c
 LOADOPTS = 
 
