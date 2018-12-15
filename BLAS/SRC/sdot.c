@@ -147,6 +147,8 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         //multiply accumulate
         while (i__1 - i__ > 0) {
             vl = setvlen(i__1 - i__);
+            MEMTOUCH(cx, float, vl-1);
+            MEMTOUCH(cy, float, vl-1);
             asm volatile ("vmca va0, %0" : : "r" (cx));
             asm volatile ("vmca va1, %0" : : "r" (cy));
             VF("sdot_loop");
@@ -168,6 +170,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         while (i__1 > 0) {
             vl = setvlen(i__1);
             ta2 = ta + vl;
+            MEMTOUCH(ta2, float, vl-1);
             asm volatile ("vmca va1, %0" : : "r" (ta2));
             VF("sdot_reduce_loop");
             i__1 = vl >> 1;
@@ -201,6 +204,8 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         //multiply accumulate
         while (i__1 - i__ > 0) {
             vl = setvlen(i__1 - i__);
+            MEMTOUCH(cx, float, vl-1);
+            MEMTOUCH(cy, float, vl-1);
             asm volatile ("vmca va0, %0" : : "r" (cx));
             asm volatile ("vmca va1, %0" : : "r" (cy));
             VF("sdot_stride_loop");
@@ -214,6 +219,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         int vl_pad = vl + vl % 2;
         float* ta = (float*)malloc(vl_pad * sizeof(float));
         ta[vl_pad - 1] = 0.f;
+        MEMTOUCH(ta, float, vl-1);
         asm volatile ("vmca va2, %0" : : "r" (ta));
         VF("sdot_post");
 
@@ -222,6 +228,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         while (i__1 > 0) {
             vl = setvlen(i__1);
             ta2 = ta + vl;
+            MEMTOUCH(ta2, float, vl-1);
             asm volatile ("vmca va1, %0" : : "r" (ta2));
             VF("sdot_reduce_loop");
             i__1 = vl >> 1;
@@ -230,6 +237,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         ret_val = *ta;
         free(ta);
     }
+    //printf("%.5f\n", ret_val);
     return ret_val;
 } /* sdot_ */
 
