@@ -12,7 +12,7 @@
 
 #include "f2c.h"
 #include "custom-utils.h"
-
+real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy);
 /* > \brief \b SGEMV */
 
 /*  =========== DOCUMENTATION =========== */
@@ -175,7 +175,8 @@
 {
     /* System generated locals */
     integer a_dim1, a_offset, i__1, i__2;
-    printf("sgemv %d %d %d %d %d %c\n", *m, *n, *lda, *incx, *incy, *trans);
+    printf("sgemv %d %d %d %d %d %.2f %.2f %c\n", *m, *n, *lda, *incx, *incy,
+           *alpha, *beta, *trans);
     /* Local variables */
     static integer i__, j, ix, iy, jx, jy, kx, ky, info;
     static real temp;
@@ -391,6 +392,14 @@
         i__ = 0;
 	i__1 = *m;
         i__2 = *n;
+        int xdimsdot = 1;
+        for (; i__ < i__2; i__ ++) {
+          cy[i__ * (*incy)] += (*alpha) * sdot_(m,
+                                                a + 1 + (i__ + 1) * a_dim1, &xdimsdot,
+                                                x + 1, incx);
+        }
+        return 0;
+
 	if (*incx == 1) {
             while (i__2 - i__ > 0) {
               vl = setvlen(max(i__2 - i__, 16));
