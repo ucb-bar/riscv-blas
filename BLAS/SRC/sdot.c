@@ -159,7 +159,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         vl = setvlen(*n);
         int vl_pad = vl + 1;
         float* ta = (float*)malloc(vl_pad * sizeof(float));
-        ta[vl_pad] = 0.f;
+        ta[vl] = 0.f;
         asm volatile ("vmca va2, %0" : : "r" (ta));
         VF("sdot_post");
         float *ta2;
@@ -214,7 +214,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         vl = setvlen(*n);
         int vl_pad = vl + 1;
         float* ta = (float*)malloc(vl_pad * sizeof(float));
-        ta[vl_pad] = 0.f;
+        ta[vl] = 0.f;
         MEMTOUCH(ta, float, vl-1);
         asm volatile ("vmca va2, %0" : : "r" (ta));
         VF("sdot_post");
