@@ -159,20 +159,21 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
 
         //reduce 
         vl = setvlen(*n);
-        int vl_pad = vl + vl % 2;
+        int vl_pad = vl + 1;
         float* ta = (float*)malloc(vl_pad * sizeof(float));
-        ta[vl_pad - 1] = 0.f;
+        ta[vl_pad] = 0.f;
         asm volatile ("vmca va2, %0" : : "r" (ta));
         VF("sdot_post");
-
         float *ta2;
-        i__1 = vl_pad >> 1;
+        i__1 = vl >> 1;
         while (i__1 > 0) {
+            i__1 = i__1 + vl % 2;
             vl = setvlen(i__1);
             ta2 = ta + vl;
             MEMTOUCH(ta2, float, vl-1);
             asm volatile ("vmca va1, %0" : : "r" (ta2));
             VF("sdot_reduce_loop");
+            ta[vl] = 0.f;
             i__1 = vl >> 1;
         }
         asm volatile("fence");
@@ -216,21 +217,23 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
 
         //reduce 
         vl = setvlen(*n);
-        int vl_pad = vl + vl % 2;
+        int vl_pad = vl + 1;
         float* ta = (float*)malloc(vl_pad * sizeof(float));
-        ta[vl_pad - 1] = 0.f;
+        ta[vl_pad] = 0.f;
         MEMTOUCH(ta, float, vl-1);
         asm volatile ("vmca va2, %0" : : "r" (ta));
         VF("sdot_post");
 
         float *ta2;
-        i__1 = vl_pad >> 1;
+        i__1 = vl >> 1;
         while (i__1 > 0) {
+            i__1 = i__1 + vl % 2;
             vl = setvlen(i__1);
             ta2 = ta + vl;
             MEMTOUCH(ta2, float, vl-1);
             asm volatile ("vmca va1, %0" : : "r" (ta2));
             VF("sdot_reduce_loop");
+            ta[vl] = 0.f;
             i__1 = vl >> 1;
         }
         asm volatile("fence");
