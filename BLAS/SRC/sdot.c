@@ -104,7 +104,6 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
     /* Local variables */
     static integer i__, m, ix, iy, mp1;
     static real stemp;
-
 /*  -- Reference BLAS level1 routine (version 3.8.0) -- */
 /*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    -- */
 /*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..-- */
@@ -210,8 +209,8 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
             asm volatile ("vmca va0, %0" : : "r" (cx));
             asm volatile ("vmca va1, %0" : : "r" (cy));
             VF("sdot_stride_loop");
-            cx +=  vl;
-            cy +=  vl;
+            cx +=  vl * (*incx);
+            cy +=  vl * (*incy);
             i__ += vl;
         }
 
