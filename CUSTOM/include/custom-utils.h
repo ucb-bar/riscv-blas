@@ -17,6 +17,7 @@ void* safe_malloc(int size);
 /* void fill_seq_16(int16_t* p, int n, int mode); */
 void setvcfg(int nd, int nw, int nh, int np);
 int setvlen(int vlen);
+int setvlen32(int vlen);
 
 #define PRELOAD(label) ({                                       \
       void* out;                                                \

@@ -139,13 +139,13 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         float* cy = sy+1;
         float* cx = sx+1;
         void* pre = PRELOAD("blas1");
-        vl = setvlen(*n);
+        vl = setvlen32(*n);
         VF("sdot_pre");
         i__ = 0;
         i__1 = *n;
         //multiply accumulate
         while (i__1 - i__ > 0) {
-            vl = setvlen(i__1 - i__);
+            vl = setvlen32(i__1 - i__);
             MEMTOUCH(cx, float, vl-1);
             MEMTOUCH(cy, float, vl-1);
             asm volatile ("vmca va0, %0" : : "r" (cx));
@@ -157,7 +157,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         }
 
         //reduce 
-        vl = setvlen(*n);
+        vl = setvlen32(*n);
         int vl_pad = vl + 1;
         float* ta = (float*)malloc(vl_pad * sizeof(float));
         ta[vl] = 0.f;
@@ -167,7 +167,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         i__1 = vl >> 1;
         while (i__1 > 0) {
             i__1 = i__1 + vl % 2;
-            vl = setvlen(i__1);
+            vl = setvlen32(i__1);
             ta2 = ta + vl;
             MEMTOUCH(ta2, float, vl-1);
             asm volatile ("vmca va1, %0" : : "r" (ta2));
@@ -195,7 +195,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
 	    cy = sy + (-(*n) + 1) * *incy + 1;
 	}
         void* pre = PRELOAD("blas1");
-        vl = setvlen(*n);
+        vl = setvlen32(*n);
         VF("sdot_pre");
         asm volatile ("vmca va3, %0" : : "r" (*incx << 2));
         asm volatile ("vmca va4, %0" : : "r" (*incy << 2));
@@ -203,7 +203,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         i__1 = *n;
         //multiply accumulate
         while (i__1 - i__ > 0) {
-            vl = setvlen(i__1 - i__);
+            vl = setvlen32(i__1 - i__);
             MEMTOUCH(cx, float, vl-1);
             MEMTOUCH(cy, float, vl-1);
             asm volatile ("vmca va0, %0" : : "r" (cx));
@@ -215,7 +215,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         }
 
         //reduce 
-        vl = setvlen(*n);
+        vl = setvlen32(*n);
         int vl_pad = vl + 1;
         float* ta = (float*)malloc(vl_pad * sizeof(float));
         ta[vl] = 0.f;
@@ -228,7 +228,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
         i__1 = vl >> 1;
         while (i__1 > 0) {
             i__1 = i__1 + vl % 2;
-            vl = setvlen(i__1);
+            vl = setvlen32(i__1);
             ta2 = ta + vl;
             MEMTOUCH(ta2, float, vl-1);
             asm volatile ("vmca va1, %0" : : "r" (ta2));

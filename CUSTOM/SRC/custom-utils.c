@@ -128,6 +128,18 @@ int setvlen(int vlen) {
     asm volatile ("fence");
     return consumed;
 }
+int setvlen32(int vlen) {
+    int consumed;
+    if (vlen > 32)
+      vlen = 32;
+    asm volatile ("vsetvl %0, %1"
+                  : "=r" (consumed)
+                  : "r" (vlen));
+    asm volatile ("la t0, vsetvlen" : : : "t0");
+    asm volatile ("vf 0(t0)");
+    asm volatile ("fence");
+    return consumed;
+}
 
 
 
