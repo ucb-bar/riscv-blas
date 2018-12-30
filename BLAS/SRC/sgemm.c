@@ -311,7 +311,7 @@
     if (*alpha == 0.f) {
       if (*beta == 0.f) {
         i__1 = *n;
-        #pragma omp parallel
+#pragma omp parallel firstprivate(j, i__, i__1, i__2)
         #pragma omp for
         for (j = 1; j <= i__1; ++j) {
           i__2 = *m;
@@ -321,7 +321,7 @@
         }
       } else {
         i__1 = *n;
-        #pragma omp parallel
+#pragma omp parallel firstprivate(j, i__, i__1, i__2)
         #pragma omp for
         for (j = 1; j <= i__1; ++j) {
           i__2 = *m;
@@ -347,7 +347,7 @@
         i__2 = *k;
         i__3 = *m;
 
-        #pragma omp parallel
+#pragma omp parallel firstprivate(i__, i__1, i__2, i__3, ca, cb, cc, vl, l, j)
         {
           int threadnum = omp_get_thread_num();
           int numthreads = omp_get_num_threads();
@@ -450,7 +450,7 @@
         i__1 = *n;
         i__2 = *k;
         i__3 = *m;
-        #pragma omp parallel
+#pragma omp parallel firstprivate(i__, i__1, i__2, i__3, ca, cb, cc, vl, l, j)
         {
           int threadnum = omp_get_thread_num();
           int numthreads = omp_get_num_threads();
@@ -534,8 +534,6 @@
           ta[i__] = 0.0;
         }
 
-        #pragma omp parallel
-        #pragma omp for 
         for (i__ = 1; i__ <= *m; i__++)
           for (l = 1; l <= *k; l++)
             {
