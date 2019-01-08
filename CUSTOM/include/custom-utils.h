@@ -37,10 +37,11 @@ int setvlen32(int vlen);
   }                                                              \
     })
 
-#define VF(label) {                             \
-    void* dest;                                   \
-    asm volatile ("la %0, " label : "=r" (dest)); \
-    asm volatile ("vf 0(%0)" : : "r" (dest));     \
+#define VF(label) {                                                     \
+    void* dest;                                                         \
+    asm volatile ("la %0, " label : "=r" (dest));                       \
+    asm volatile ("lw t0, 0(%0)" : : "r" (dest) : "t0");                \
+    asm volatile ("vf 0(%0)" : : "r" (dest));                           \
   }
 /* void memcpy_16(int16_t* src, int16_t* dest, int len); */
 /* void memcpy_32(float* src, float* dest, int len); */
