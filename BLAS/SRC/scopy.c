@@ -142,6 +142,8 @@
 
       while (i__1 - i__ > 0) {
         vl = setvlen(i__1 - i__);
+        MEMTOUCH(sxa, float, vl);
+        MEMTOUCH(sya, float, vl);
         asm volatile ("vmca va0, %0" : : "r" (sxa));
         asm volatile ("vmca va1, %0" : : "r" (sya));
         VF("scopy_unit");

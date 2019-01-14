@@ -157,6 +157,8 @@
         i__1 = *n;
         while (i__1 - i__ > 0) {
           vl = setvlen(i__1 - i__);
+          MEMTOUCH(cx, float, vl);
+          MEMTOUCH(cy, float, vl);
           asm volatile ("vmca va0, %0" : : "r" (cx));
           asm volatile ("vmca va1, %0" : : "r" (cy));
           VF("saxpy_loop");

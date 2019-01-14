@@ -136,6 +136,7 @@
       i__1 = *n;
       while (i__1 - i__ > 0) {
         vl = setvlen(i__1 - i__);
+        MEMTOUCH(sxa, float, vl);
         asm volatile ("vmca va0, %0" : : "r" (sxa));
         VF("sscal_unit");
         sxa += vl;
