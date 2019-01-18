@@ -175,7 +175,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy);
 {
     /* System generated locals */
     integer a_dim1, a_offset, i__1, i__2;
-    printf("sgemv %d %d %d %d %d %c\n", *m, *n, *lda, *incx, *incy, *trans);
+    //printf("sgemv %d %d %d %d %d %c\n", *m, *n, *lda, *incx, *incy, *trans);
     /* Local variables */
     static integer i__, j, ix, iy, jx, jy, kx, ky, info;
     static real temp;
@@ -440,7 +440,7 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy);
 	/* } */
     }
     asm volatile("fence");
-    printf("result[0]: %.5f\n", *(y + ky));
+    //printf("result[0]: %.5f\n", *(y + ky));
     return 0;
 
 /*     End of SGEMV . */

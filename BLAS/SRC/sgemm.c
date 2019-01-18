@@ -217,7 +217,7 @@
     static integer nrowa, nrowb;
     extern /* Subroutine */ int xerbla_(char *, integer *, ftnlen);
 
-    printf("%c %c %d %d %d\n", *transa, *transb, *m, *n, *k);
+    //printf("%c %c %d %d %d\n", *transa, *transb, *m, *n, *k);
 /*  -- Reference BLAS level3 routine (version 3.7.0) -- */
 /*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    -- */
 /*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..-- */
@@ -406,7 +406,7 @@
           i__ += vl;
         }
         asm volatile("fence");
-        printf("result[0]: %.5f\n", c__[1 + c_dim1]);
+        //printf("result[0]: %.5f\n", c__[1 + c_dim1]);
         return 0;
       } else {
         /*           Form  C := alpha*A**T*B + beta*C */
@@ -420,7 +420,7 @@
                ldc, 1, 1);
         free(ta);
         asm volatile("fence");
-        printf("result[0]: %.5f\n", c__[1 + c_dim1]);
+        //printf("result[0]: %.5f\n", c__[1 + c_dim1]);
         return 0;
       }
     } else {
