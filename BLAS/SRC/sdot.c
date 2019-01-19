@@ -104,6 +104,8 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
     /* Local variables */
     static integer i__, m, ix, iy, mp1;
     static real stemp;
+
+
 /*  -- Reference BLAS level1 routine (version 3.8.0) -- */
 /*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    -- */
 /*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..-- */
@@ -130,117 +132,75 @@ real sdot_(integer *n, real *sx, integer *incx, real *sy, integer *incy)
     if (*n <= 0) {
 	return ret_val;
     }
+    hwacha_init();
+    setvcfg(0, 3, 0, 1);
+    PRELOAD("blas1");
     if (*incx == 1 && *incy == 1) {
 
 /*        code for both increments equal to 1 */
-        hwacha_init();
-        setvcfg(0, 3, 0, 1);
-        int vl = 0;
-        float* cy = sy+1;
-        float* cx = sx+1;
-        void* pre = PRELOAD("blas1");
-        vl = setvlen32(*n);
-        VF("sdot_pre");
-        i__ = 0;
-        i__1 = *n;
-        //multiply accumulate
-        while (i__1 - i__ > 0) {
-            vl = setvlen32(i__1 - i__);
-            MEMTOUCH(cx, float, vl-1);
-            MEMTOUCH(cy, float, vl-1);
-            asm volatile ("vmca va0, %0" : : "r" (cx));
-            asm volatile ("vmca va1, %0" : : "r" (cy));
-            VF("sdot_loop");
-            cx += vl;
-            cy += vl;
-            i__ += vl;
-        }
 
-        //reduce 
-        vl = setvlen32(*n);
-        int vl_pad = vl + 1;
-        float* ta = (float*)malloc(vl_pad * sizeof(float));
-        ta[vl] = 0.f;
-        asm volatile ("vmca va2, %0" : : "r" (ta));
-        VF("sdot_post");
-        float *ta2;
-        i__1 = vl >> 1;
-        while (i__1 > 0) {
-            i__1 = i__1 + vl % 2;
-            vl = setvlen32(i__1);
-            ta2 = ta + vl;
-            MEMTOUCH(ta2, float, vl-1);
-            asm volatile ("vmca va1, %0" : : "r" (ta2));
-            VF("sdot_reduce_loop");
-            ta[vl] = 0.f;
-            i__1 = vl >> 1;
+
+/*        clean-up loop */
+
+	m = *n % 32;
+	if (m != 0) {
+	    i__1 = m;
+	    for (i__ = 1; i__ <= i__1; ++i__) {
+		stemp += sx[i__] * sy[i__];
+	    }
+	    if (*n < 32) {
+		ret_val = stemp;
+		return ret_val;
+	    }
+	}
+        float buffer[32];
+        memset(buffer, 0, 32 * sizeof(float));
+        setvlen(32);
+        VF("sdot_pre");
+	mp1 = m + 1;
+	i__1 = *n;
+        for (i__ = mp1; i__ <= i__1; i__ += 32) {
+          MEMTOUCH(sx + i__, float, 32);
+          MEMTOUCH(sy + i__, float, 32);
+          asm volatile("vmca va0, %0" : : "r" (sx + i__));
+          asm volatile("vmca va1, %0" : : "r" (sy + i__));
+          VF("sdot_loop");
         }
-        asm volatile("fence");
-        ret_val = *ta;
-        free(ta);
+        asm volatile ("vmca va2, %0" : : "r" (buffer));
+        VF("sdot_post");
+        asm volatile ("fence");
+        //printf("stemp %.3f\n", stemp);
+        for (i__ = 0; i__ < 32; i__++) {
+          stemp += buffer[i__];
+        }
+        //printf("stemp %.3f\n", stemp);
+        
+	/* for (i__ = mp1; i__ <= i__1; i__ += 5) { */
+	/*     stemp = stemp + sx[i__] * sy[i__] + sx[i__ + 1] * sy[i__ + 1] +  */
+	/* 	    sx[i__ + 2] * sy[i__ + 2] + sx[i__ + 3] * sy[i__ + 3] +  */
+	/* 	    sx[i__ + 4] * sy[i__ + 4]; */
+	/* } */
     } else {
 
 /*        code for unequal increments or equal increments */
 /*          not equal to 1 */
 
-        hwacha_init();
-        setvcfg(0, 3, 0, 1);
-        int vl = 0;
-        float* cy = sy+1;
-        float* cx = sx+1;
+	ix = 1;
+	iy = 1;
 	if (*incx < 0) {
-	    cx = sx + (-(*n) + 1) * *incx + 1;
+	    ix = (-(*n) + 1) * *incx + 1;
 	}
 	if (*incy < 0) {
-	    cy = sy + (-(*n) + 1) * *incy + 1;
+	    iy = (-(*n) + 1) * *incy + 1;
 	}
-        void* pre = PRELOAD("blas1");
-        vl = setvlen32(*n);
-        VF("sdot_pre");
-        asm volatile ("vmca va3, %0" : : "r" (*incx << 2));
-        asm volatile ("vmca va4, %0" : : "r" (*incy << 2));
-        i__ = 0;
-        i__1 = *n;
-        //multiply accumulate
-        while (i__1 - i__ > 0) {
-            vl = setvlen32(i__1 - i__);
-            MEMTOUCH(cx, float, vl-1);
-            MEMTOUCH(cy, float, vl-1);
-            asm volatile ("vmca va0, %0" : : "r" (cx));
-            asm volatile ("vmca va1, %0" : : "r" (cy));
-            VF("sdot_stride_loop");
-            cx +=  vl * (*incx);
-            cy +=  vl * (*incy);
-            i__ += vl;
-        }
-
-        //reduce 
-        vl = setvlen32(*n);
-        int vl_pad = vl + 1;
-        float* ta = (float*)malloc(vl_pad * sizeof(float));
-        ta[vl] = 0.f;
-
-        MEMTOUCH(ta, float, vl-1);
-        asm volatile ("vmca va2, %0" : : "r" (ta));
-        VF("sdot_post");
-
-        float *ta2;
-        i__1 = vl >> 1;
-        while (i__1 > 0) {
-            i__1 = i__1 + vl % 2;
-            vl = setvlen32(i__1);
-            ta2 = ta + vl;
-            MEMTOUCH(ta2, float, vl-1);
-            asm volatile ("vmca va1, %0" : : "r" (ta2));
-            VF("sdot_reduce_loop");
-            ta[vl] = 0.f;
-            i__1 = vl >> 1;
-        }
-        asm volatile("fence");
-        ret_val = *ta;
-        free(ta);
+	i__1 = *n;
+	for (i__ = 1; i__ <= i__1; ++i__) {
+	    stemp += sx[ix] * sy[iy];
+	    ix += *incx;
+	    iy += *incy;
+	}
     }
-    //printf("%.5f\n", ret_val);
+    ret_val = stemp;
     return ret_val;
 } /* sdot_ */
 
