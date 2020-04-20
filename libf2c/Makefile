@@ -188,7 +188,7 @@ xwsne.o:	fmt.h
 arith.h: arithchk.c
 	$(CROSSCC) $(CFLAGS) -DNO_FPINIT arithchk.c -lm ||\
 	 $(CROSSCC) -DNO_LONG_LONG $(CFLAGS) -DNO_FPINIT arithchk.c -lm
-	spike pk a.out >arith.h
+	spike pk a.out | tail -1 >arith.h
 	rm -f a.out arithchk.o
 
 check:
