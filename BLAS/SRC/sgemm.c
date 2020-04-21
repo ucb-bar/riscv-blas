@@ -11,6 +11,7 @@
 */
 
 #include "f2c.h"
+#include "include/gemmini.h"
 
 /* > \brief \b SGEMM */
 

@@ -12,7 +12,8 @@ SPIKEARGS=
 #  CC is the C compiler, normally invoked with options CFLAGS.
 #
 CC     = $(PREFIX)gcc -static
-CFLAGS = -O3 -I../../libf2c -I../../CUSTOM/include -Wa,-march=$(MARCH)
+# CFLAGS = -O3 -I../../libf2c -I../../CUSTOM/include -Wa,-march=$(MARCH)
+CFLAGS = -O3 -I../../libf2c -I../../CUSTOM/include -I../../../gemmini-rocc-tests/ -Wa,-march=$(MARCH)
 
 #  Modify the FORTRAN and OPTS definitions to refer to the compiler
 #  and desired compiler options for your machine.  NOOPT refers to
