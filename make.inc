@@ -7,7 +7,7 @@
 SHELL = /bin/sh
 PREFIX = riscv64-unknown-linux-gnu-
 MARCH=rv64gc
-SPIKEARGS=
+SPIKEARGS=--extension=gemmini
 
 #  CC is the C compiler, normally invoked with options CFLAGS.
 #
