@@ -71,29 +71,29 @@ xzcblat3: c_zblat3.o $(ztestl3o) $(LIB)
 # RUN TESTS
 run: all
 	@echo "--> TESTING CBLAS 1 - SINGLE PRECISION REAL <--"
-	@spike pk xscblat1 > stest1.out
+	@spike --extension=gemmini pk xscblat1 > stest1.out
 	@echo "--> TESTING CBLAS 1 - DOUBLE PRECISION REAL <--"
-	@spike pk xdcblat1 > dtest1.out
+	@spike --extension=gemmini pk xdcblat1 > dtest1.out
 	@echo "--> TESTING CBLAS 1 - SINGLE PRECISION COMPLEX <--"
-	@spike pk xccblat1 > ctest1.out
+	@spike --extension=gemmini pk xccblat1 > ctest1.out
 	@echo "--> TESTING CBLAS 1 - DOUBLE PRECISION COMPLEX <--"
-	@spike pk xzcblat1 > ztest1.out
+	@spike --extension=gemmini pk xzcblat1 > ztest1.out
 	@echo "--> TESTING CBLAS 2 - SINGLE PRECISION REAL <--"
-	@spike pk xscblat2 < sin2 > stest2.out
+	@spike --extension=gemmini pk xscblat2 < sin2 > stest2.out
 	@echo "--> TESTING CBLAS 2 - DOUBLE PRECISION REAL <--"
-	@spike pk xdcblat2 < din2 > dtest2.out
+	@spike --extension=gemmini pk xdcblat2 < din2 > dtest2.out
 	@echo "--> TESTING CBLAS 2 - SINGLE PRECISION COMPLEX <--"
-	@spike pk xccblat2 < cin2 > ctest2.out
+	@spike --extension=gemmini pk xccblat2 < cin2 > ctest2.out
 	@echo "--> TESTING CBLAS 2 - DOUBLE PRECISION COMPLEX <--"
-	@spike pk xzcblat2 < zin2 > ztest2.out
+	@spike --extension=gemmini pk xzcblat2 < zin2 > ztest2.out
 	@echo "--> TESTING CBLAS 3 - SINGLE PRECISION REAL <--"
-	@spike pk xscblat3 < sin3 > stest3.out
+	@spike --extension=gemmini pk xscblat3 < sin3 > stest3.out
 	@echo "--> TESTING CBLAS 3 - DOUBLE PRECISION REAL <--"
-	@spike pk xdcblat3 < din3 > dtest3.out
+	@spike --extension=gemmini pk xdcblat3 < din3 > dtest3.out
 	@echo "--> TESTING CBLAS 3 - SINGLE PRECISION COMPLEX <--"
-	@spike pk xccblat3 < cin3 > ctest3.out
+	@spike --extension=gemmini pk xccblat3 < cin3 > ctest3.out
 	@echo "--> TESTING CBLAS 3 - DOUBLE PRECISION COMPLEX <--"
-	@spike pk xzcblat3 < zin3 > ztest3.out
+	@spike --extension=gemmini pk xzcblat3 < zin3 > ztest3.out
 	@cat *.out
 
 clean: cleanobj cleanexe cleantest

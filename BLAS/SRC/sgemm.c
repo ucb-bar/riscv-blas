@@ -340,19 +340,54 @@
 
 /*           Form  C := alpha*A*B + beta*C. */
 
+             //==============Gemmini Implementation====================
+
+
+             //k==0 is illegal in Gemmini calls, but legal in BLAS calls
+             //Therefore, we handle it on the scalar processor
+             if (*k == 0) {
+	       i__1 = *n;
+	       for (j = 1; j <= i__1; ++j) {
+	         if (*beta == 0.f) {
+		    i__2 = *m;
+		    for (i__ = 1; i__ <= i__2; ++i__) {
+			c__[i__ + j * c_dim1] = 0.f;
+		    }
+		 } else if (*beta != 1.f) {
+		    i__2 = *m;
+		    for (i__ = 1; i__ <= i__2; ++i__) {
+			c__[i__ + j * c_dim1] = *beta * c__[i__ + j * c_dim1];
+		    }
+		 }
+               }
+
+             } else {
+
+             //BLAS interface assumes a column-major matrix memory layout.
+             //Since Gemmini assumes a row-major matrix memroy layout, we use transpose properties
+             //(B^T)*(A^T) = (AB)^T
+             //Hence, we flip the order of A and B in the call to gemmini tiled_matmul_auto
+                tiled_matmul_auto(*n, *m, *k,
+                                  b + (1 + *(ldb)), a + (1 + *(lda)),
+                                  c__+ (1 + *(ldc)), c__+ (1 + *(ldc)),
+                                  *ldb, *lda, *ldc, *ldc,
+                                  *alpha, 1.f, *beta,
+                                  NO_ACTIVATION, 0, 0, 0, OS);
+             }
+
+/*
+             //==============Reference Implementation====================
 	    i__1 = *n;
 	    for (j = 1; j <= i__1; ++j) {
 		if (*beta == 0.f) {
 		    i__2 = *m;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
 			c__[i__ + j * c_dim1] = 0.f;
-/* L50: */
 		    }
 		} else if (*beta != 1.f) {
 		    i__2 = *m;
 		    for (i__ = 1; i__ <= i__2; ++i__) {
 			c__[i__ + j * c_dim1] = *beta * c__[i__ + j * c_dim1];
-/* L60: */
 		    }
 		}
 		i__2 = *k;
@@ -361,12 +396,10 @@
 		    i__3 = *m;
 		    for (i__ = 1; i__ <= i__3; ++i__) {
 			c__[i__ + j * c_dim1] += temp * a[i__ + l * a_dim1];
-/* L70: */
 		    }
-/* L80: */
 		}
-/* L90: */
 	    }
+*/
 	} else {
 
 /*           Form  C := alpha*A**T*B + beta*C */
